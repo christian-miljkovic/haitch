@@ -32,9 +32,10 @@
 }
 
 @media (max-width: 767px) {
-  /* Show the portrait banner at its natural ratio — no cropping. */
+  /* Portrait banner at natural ratio (no cropping), section still fills the
+     viewport so the footer stays below the fold. */
   .hero {
-    height: auto;
+    height: calc(100svh - var(--nav-height));
     min-height: 0;
   }
 
