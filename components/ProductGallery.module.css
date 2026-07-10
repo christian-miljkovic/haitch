@@ -1,12 +1,18 @@
 .root {
   position: relative;
+  /* Gutter ends where "SHOP" ends in the nav (24px padding + text width),
+     so the photo's left edge aligns with the end of SHOP. */
+  display: grid;
+  grid-template-columns: 58px 1fr;
 }
 
 .counter {
+  grid-column: 1;
+  align-self: start;
+  justify-self: start;
   position: sticky;
   top: 50vh;
-  float: left;
-  margin-left: 24px;
+  margin-left: 24px; /* aligns with the start of SHOP in the nav */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -23,6 +29,7 @@
 }
 
 .track {
+  grid-column: 2;
   display: flex;
   flex-direction: column;
 }
@@ -37,9 +44,12 @@
 }
 
 @media (max-width: 900px) {
+  .root {
+    display: block;
+  }
+
   .counter {
     position: absolute;
-    float: none;
     top: auto;
     bottom: 16px;
     left: 16px;
