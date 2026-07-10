@@ -1,0 +1,246 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 80px;
+  align-items: start;
+  padding: 40px 24px 96px;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.stepper ol {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 48px;
+  font-size: 11px;
+}
+
+.stepper li {
+  text-transform: uppercase;
+  transition: color 0.3s var(--ease);
+}
+
+.stepper li:not(:last-child)::after {
+  content: '|';
+  margin-left: 12px;
+  color: var(--line);
+}
+
+.current {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.done {
+  color: var(--fg);
+}
+
+.todo {
+  color: var(--muted);
+}
+
+.section {
+  animation: sectionIn 0.4s var(--ease);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+}
+
+.line {
+  display: flex;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.thumb {
+  position: relative;
+  width: 110px;
+  height: 146px;
+  flex-shrink: 0;
+  background: #f1f1ee;
+}
+
+.thumbImg {
+  object-fit: cover;
+}
+
+.lineBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lineTitle {
+  text-transform: uppercase;
+}
+
+.lineMeta {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.quantityRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quantityRow button {
+  padding: 2px 6px;
+}
+
+.remove {
+  align-self: flex-start;
+  font-size: 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.lineTotal {
+  white-space: nowrap;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 560px;
+}
+
+.fieldRow {
+  display: flex;
+  gap: 24px;
+}
+
+.fieldRow .field {
+  flex: 1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.field input {
+  border: none;
+  border-bottom: 1px solid var(--fg);
+  padding: 7px 0;
+  font-size: 13px;
+}
+
+.continue,
+.payButton {
+  display: block;
+  width: min(360px, 100%);
+  margin-top: 48px;
+  padding: 15px 0;
+  background: var(--fg);
+  color: var(--bg);
+  text-align: center;
+  text-transform: uppercase;
+  transition: opacity 0.3s var(--ease);
+}
+
+.continue:hover:enabled,
+.payButton:hover {
+  opacity: 0.85;
+}
+
+.continue:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.back {
+  margin-top: 20px;
+  font-size: 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.paymentNote {
+  max-width: 480px;
+  color: var(--muted);
+}
+
+.summary {
+  position: sticky;
+  top: calc(var(--nav-height) + 24px);
+  border-top: 1px solid var(--fg);
+  padding-top: 20px;
+}
+
+.summaryTitle {
+  font-size: 12px;
+  margin-bottom: 24px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+}
+
+.summaryTotal {
+  font-weight: 600;
+  border-bottom: 1px solid var(--fg);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 120px 24px;
+}
+
+.emptyLink {
+  padding: 13px 64px;
+  background: var(--fg);
+  color: var(--bg);
+}
+
+@keyframes sectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 48px;
+  }
+
+  .summary {
+    position: static;
+    order: -1;
+  }
+
+  .fieldRow {
+    flex-direction: column;
+    gap: 32px;
+  }
+}
+
+.field input:focus {
+  border-bottom-width: 2px;
+}

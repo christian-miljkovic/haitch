@@ -53,7 +53,7 @@ describe('bag', () => {
 
     const drawer = screen.getByRole('dialog');
     expect(within(drawer).getAllByText('WHITE TRACK JACKET')).toHaveLength(1);
-    expect(within(drawer).getByLabelText(/quantity/i)).toHaveTextContent('2');
+    expect(within(drawer).getByLabelText(/^quantity$/i)).toHaveTextContent('2');
     expect(screen.getByRole('button', { name: /bag \(2\)/i })).toBeInTheDocument();
   });
 

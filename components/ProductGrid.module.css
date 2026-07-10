@@ -1,0 +1,53 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+
+.tile {
+  display: block;
+}
+
+.frame {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #f1f1ee;
+}
+
+.primary,
+.secondary {
+  object-fit: cover;
+}
+
+.secondary {
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+}
+
+.tile:hover .secondary,
+.tile:focus-visible .secondary {
+  opacity: 1;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px 32px;
+  font-size: 11px;
+}
+
+.name {
+  text-transform: uppercase;
+}
+
+@media (max-width: 767px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tile:hover .secondary {
+    opacity: 0;
+  }
+}

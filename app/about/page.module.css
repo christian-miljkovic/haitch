@@ -1,0 +1,20 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: 96px 24px 140px;
+}
+
+.heading {
+  font-size: 13px;
+}
+
+.body {
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-size: 13px;
+  line-height: 1.9;
+}

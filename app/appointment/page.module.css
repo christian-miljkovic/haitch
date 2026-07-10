@@ -1,0 +1,19 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 96px 24px 140px;
+  min-height: 60vh;
+}
+
+.heading {
+  font-size: 13px;
+}
+
+.intro {
+  color: var(--muted);
+  text-align: center;
+  max-width: 380px;
+  margin-bottom: 28px;
+}

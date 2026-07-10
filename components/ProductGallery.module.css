@@ -1,0 +1,66 @@
+.root {
+  position: relative;
+}
+
+.counter {
+  position: sticky;
+  top: 50vh;
+  float: left;
+  margin-left: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  z-index: 2;
+}
+
+.counterDivider {
+  width: 14px;
+  height: 1px;
+  background: var(--muted);
+}
+
+.track {
+  display: flex;
+  flex-direction: column;
+}
+
+.slide {
+  width: 100%;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 900px) {
+  .counter {
+    position: absolute;
+    float: none;
+    top: auto;
+    bottom: 16px;
+    left: 16px;
+    margin: 0;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .track {
+    flex-direction: row;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+  }
+}

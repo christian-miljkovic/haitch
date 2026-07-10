@@ -1,0 +1,65 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.gallery {
+  min-width: 0;
+}
+
+.panelWrap {
+  position: relative;
+}
+
+.panel {
+  position: sticky;
+  top: var(--nav-height);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 96px 24px;
+}
+
+.title {
+  font-size: 13px;
+  letter-spacing: var(--tracking);
+}
+
+.price {
+  margin-top: -20px;
+}
+
+.description {
+  color: var(--fg);
+  line-height: 1.8;
+}
+
+.note {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 11px;
+}
+
+.links a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    position: static;
+    padding: 40px 24px 80px;
+  }
+}

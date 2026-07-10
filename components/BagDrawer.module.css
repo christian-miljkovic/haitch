@@ -1,0 +1,170 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--overlay);
+  animation: fadeIn 0.4s var(--ease);
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(480px, 100vw);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  padding: 0 32px;
+  animation: slideIn 0.45s var(--ease);
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 24px 0;
+}
+
+.title {
+  font-size: 12px;
+  letter-spacing: var(--tracking);
+}
+
+.close {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  padding: 8px;
+}
+
+.empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 24px 0;
+}
+
+.line {
+  display: flex;
+  gap: 20px;
+}
+
+.thumb {
+  position: relative;
+  width: 96px;
+  height: 128px;
+  flex-shrink: 0;
+  background: #f1f1ee;
+}
+
+.thumbImg {
+  object-fit: cover;
+}
+
+.lineBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lineTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lineTitle {
+  text-transform: uppercase;
+}
+
+.lineMeta {
+  color: var(--muted);
+}
+
+.quantityRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quantityRow button {
+  padding: 2px 6px;
+}
+
+.remove {
+  align-self: flex-start;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding: 20px 0 28px;
+  border-top: 1px solid var(--line);
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 11px;
+}
+
+.estimated {
+  font-weight: 500;
+}
+
+.checkout {
+  display: block;
+  margin-top: 18px;
+  padding: 14px 0;
+  background: var(--fg);
+  color: var(--bg);
+  text-align: center;
+  text-transform: uppercase;
+  transition: opacity 0.3s var(--ease);
+}
+
+.checkout:hover {
+  opacity: 0.85;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

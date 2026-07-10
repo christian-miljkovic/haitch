@@ -1,0 +1,95 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: min(420px, 100%);
+  margin: 0 auto;
+}
+
+.counter {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fieldIn 0.5s var(--ease);
+}
+
+.label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--fg);
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.textarea {
+  resize: none;
+  line-height: 1.7;
+}
+
+.next,
+.submit {
+  width: 100%;
+  padding: 14px 0;
+  text-transform: uppercase;
+  transition: opacity 0.3s var(--ease);
+}
+
+.next {
+  border: 1px solid var(--fg);
+}
+
+.submit {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.next:disabled,
+.submit:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.done {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doneNote {
+  color: var(--muted);
+}
+
+.error {
+  color: #8b0000;
+  font-size: 11px;
+}
+
+@keyframes fieldIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.input:focus,
+.textarea:focus {
+  border-bottom-width: 2px;
+}

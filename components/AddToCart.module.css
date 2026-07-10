@@ -1,0 +1,47 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.sizeRow {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  border-bottom: 1px solid var(--fg);
+  padding-bottom: 10px;
+}
+
+.sizeLabel {
+  font-size: 11px;
+}
+
+.select {
+  flex: 1;
+  border: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23111'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  padding-right: 20px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.button {
+  padding: 15px 0;
+  background: var(--fg);
+  color: var(--bg);
+  text-align: center;
+  text-transform: uppercase;
+  transition: opacity 0.3s var(--ease);
+}
+
+.button:hover:enabled {
+  opacity: 0.85;
+}
+
+.button:disabled {
+  background: var(--muted);
+  cursor: default;
+}
