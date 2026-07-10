@@ -35,13 +35,28 @@ type RawProduct = {
   variants: RawVariant[];
 };
 
-const STORE_URL = 'https://haitch-usa.com';
+export const STORE_URL = 'https://haitch-usa.com';
+
+const ENTITIES: Record<string, string> = {
+  '&amp;': '&',
+  '&nbsp;': ' ',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&apos;': "'",
+  '&lsquo;': '‘',
+  '&rsquo;': '’',
+  '&ldquo;': '“',
+  '&rdquo;': '”',
+  '&mdash;': '—',
+  '&ndash;': '–',
+  '&lt;': '<',
+  '&gt;': '>',
+};
 
 function stripHtml(html: string): string {
   return html
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&nbsp;/g, ' ')
+    .replace(/&[a-z#0-9]+;/gi, (entity) => ENTITIES[entity] ?? entity)
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -71,7 +86,8 @@ export async function getProducts(): Promise<Product[]> {
     });
     if (!res.ok) throw new Error(`products.json returned ${res.status}`);
     return normalizeProducts(await res.json());
-  } catch {
+  } catch (error) {
+    console.error('[shopify] live catalog fetch failed, serving fixture:', error);
     return normalizeProducts(fixture);
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { EMAIL_RE } from '@/lib/format';
 import styles from './AppointmentForm.module.css';
 
 const FORMSPREE_ID = process.env.NEXT_PUBLIC_FORMSPREE_ID ?? 'placeholder';
@@ -13,7 +14,7 @@ const FIELDS: { key: FieldKey; label: string; type: string; validate: (v: string
     key: 'email',
     label: 'EMAIL',
     type: 'email',
-    validate: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+    validate: (v) => EMAIL_RE.test(v.trim()),
   },
   {
     key: 'phone',
@@ -69,8 +70,15 @@ export default function AppointmentForm() {
   const setValue = (v: string) => setValues((prev) => ({ ...prev, [field.key]: v }));
 
   return (
-    <div className={styles.root}>
-      <p className={styles.counter}>
+    <form
+      className={styles.root}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (isLast) submit();
+        else advance();
+      }}
+    >
+      <p className={styles.counter} aria-live="polite">
         {step + 1} / {FIELDS.length}
       </p>
 
@@ -106,12 +114,18 @@ export default function AppointmentForm() {
       </div>
 
       {isLast ? (
-        <button className={styles.submit} onClick={submit} disabled={!valid || status === 'sending'}>
+        <button type="submit" className={styles.submit} disabled={!valid || status === 'sending'}>
           {status === 'sending' ? 'SENDING…' : 'SUBMIT'}
         </button>
       ) : (
-        <button className={styles.next} onClick={advance} disabled={!valid}>
+        <button type="submit" className={styles.next} disabled={!valid}>
           NEXT
+        </button>
+      )}
+
+      {step > 0 && (
+        <button type="button" className={styles.back} onClick={() => setStep((s) => s - 1)}>
+          BACK
         </button>
       )}
 
@@ -120,6 +134,6 @@ export default function AppointmentForm() {
           Something went wrong. Please email info@haitch-usa.com.
         </p>
       )}
-    </div>
+    </form>
   );
 }

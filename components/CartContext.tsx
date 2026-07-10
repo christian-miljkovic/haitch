@@ -38,7 +38,23 @@ let cache: { raw: string | null; lines: BagLine[] } = { raw: null, lines: EMPTY 
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY || e.key === null) listener();
+  };
+  window.addEventListener('storage', onStorage);
+  return () => {
+    listeners.delete(listener);
+    window.removeEventListener('storage', onStorage);
+  };
+}
+
+function isBagLine(value: unknown): value is BagLine {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as BagLine).variantId === 'number' &&
+    typeof (value as BagLine).quantity === 'number'
+  );
 }
 
 function getSnapshot(): BagLine[] {
@@ -46,11 +62,12 @@ function getSnapshot(): BagLine[] {
   try {
     raw = window.localStorage.getItem(STORAGE_KEY);
   } catch {
-    return EMPTY;
+    return cache.lines;
   }
   if (raw !== cache.raw) {
     try {
-      cache = { raw, lines: raw ? (JSON.parse(raw) as BagLine[]) : EMPTY };
+      const parsed: unknown = raw ? JSON.parse(raw) : EMPTY;
+      cache = { raw, lines: Array.isArray(parsed) ? parsed.filter(isBagLine) : EMPTY };
     } catch {
       cache = { raw, lines: EMPTY };
     }
@@ -63,11 +80,12 @@ function getServerSnapshot(): BagLine[] {
 }
 
 function writeLines(lines: BagLine[]) {
+  const raw = JSON.stringify(lines);
+  cache = { raw, lines };
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
+    window.localStorage.setItem(STORAGE_KEY, raw);
   } catch {
-    // Ignore storage failures (private mode, quota); bag lives in memory only.
-    cache = { raw: cache.raw, lines };
+    // Storage unavailable (private mode, quota); bag lives in memory via cache.
   }
   listeners.forEach((listener) => listener());
 }

@@ -2,12 +2,28 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import { formatPrice } from '@/lib/format';
 import { useCart } from './CartContext';
 import styles from './BagDrawer.module.css';
 
 export default function BagDrawer() {
   const { lines, count, subtotal, isOpen, remove, setQuantity, closeBag } = useCart();
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const opener = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeBag();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      opener?.focus();
+    };
+  }, [isOpen, closeBag]);
 
   if (!isOpen) return null;
 
@@ -17,7 +33,7 @@ export default function BagDrawer() {
       <aside className={styles.drawer} role="dialog" aria-modal="true" aria-label="Bag">
         <header className={styles.header}>
           <h2 className={styles.title}>BAG ({count})</h2>
-          <button className={styles.close} onClick={closeBag} aria-label="Close">
+          <button ref={closeRef} className={styles.close} onClick={closeBag} aria-label="Close">
             ✕
           </button>
         </header>
@@ -43,20 +59,24 @@ export default function BagDrawer() {
                     <div className={styles.quantityRow}>
                       <span>QUANTITY</span>
                       <button
-                        aria-label="Decrease quantity"
+                        aria-label={`Decrease quantity, ${line.title}`}
                         onClick={() => setQuantity(line.variantId, line.quantity - 1)}
                       >
                         −
                       </button>
-                      <span aria-label="Quantity">{line.quantity}</span>
+                      <span>{line.quantity}</span>
                       <button
-                        aria-label="Increase quantity"
+                        aria-label={`Increase quantity, ${line.title}`}
                         onClick={() => setQuantity(line.variantId, line.quantity + 1)}
                       >
                         +
                       </button>
                     </div>
-                    <button className={styles.remove} onClick={() => remove(line.variantId)}>
+                    <button
+                      className={styles.remove}
+                      aria-label={`Remove ${line.title}`}
+                      onClick={() => remove(line.variantId)}
+                    >
                       REMOVE
                     </button>
                   </div>

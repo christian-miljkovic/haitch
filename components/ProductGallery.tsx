@@ -26,9 +26,11 @@ export default function ProductGallery({ images, title }: { images: string[]; ti
 
   return (
     <div className={styles.root}>
-      <p className={styles.counter} aria-label={`Image ${current} of ${images.length}`}>
+      <p className={styles.counter}>
+        <span className="visually-hidden">Image </span>
         <span>{current}</span>
-        <span className={styles.counterDivider} />
+        <span className={styles.counterDivider} aria-hidden="true" />
+        <span className="visually-hidden">of </span>
         <span>{images.length}</span>
       </p>
       <div className={styles.track}>

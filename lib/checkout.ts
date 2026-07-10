@@ -1,3 +1,5 @@
+import { STORE_URL } from './shopify';
+
 export type CheckoutLine = { variantId: number; quantity: number };
 
 export type CheckoutInfo = {
@@ -12,8 +14,6 @@ export type CheckoutInfo = {
   zip?: string;
   country?: string;
 };
-
-const STORE_URL = 'https://haitch-usa.com';
 
 const PARAM_MAP: Record<keyof CheckoutInfo, string> = {
   email: 'checkout[email]',

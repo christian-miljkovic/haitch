@@ -93,3 +93,10 @@
 .textarea:focus {
   border-bottom-width: 2px;
 }
+
+.back {
+  font-size: 10px;
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -4,13 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { buildCheckoutUrl, type CheckoutInfo } from '@/lib/checkout';
-import { formatPrice } from '@/lib/format';
+import { EMAIL_RE, formatPrice } from '@/lib/format';
 import { useCart } from './CartContext';
 import styles from './CheckoutFlow.module.css';
 
 const STEPS = ['BAG', 'INFORMATION', 'SHIPPING', 'PAYMENT'] as const;
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function CheckoutFlow() {
   const { lines, count, subtotal, remove, setQuantity } = useCart();
@@ -72,14 +70,14 @@ export default function CheckoutFlow() {
                     <p className={styles.lineMeta}>{formatPrice(line.price)}</p>
                     <div className={styles.quantityRow}>
                       <button
-                        aria-label="Decrease quantity"
+                        aria-label={`Decrease quantity, ${line.title}`}
                         onClick={() => setQuantity(line.variantId, line.quantity - 1)}
                       >
                         −
                       </button>
                       <span>{line.quantity}</span>
                       <button
-                        aria-label="Increase quantity"
+                        aria-label={`Increase quantity, ${line.title}`}
                         onClick={() => setQuantity(line.variantId, line.quantity + 1)}
                       >
                         +
