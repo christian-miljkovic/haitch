@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AddToCart from '@/components/AddToCart';
 import ProductGallery from '@/components/ProductGallery';
+import SizeGuide from '@/components/SizeGuide';
 import { formatPrice } from '@/lib/format';
 import { getProduct, getProducts } from '@/lib/shopify';
 import styles from './page.module.css';
@@ -41,6 +42,8 @@ export default async function ProductPage({ params }: Props) {
           <p className={styles.price}>{formatPrice(product.price)}</p>
 
           <AddToCart product={product} />
+
+          <SizeGuide />
 
           <p className={styles.description}>{product.description}</p>
 
