@@ -2,6 +2,10 @@
 export const HERO_IMAGE =
   'https://haitch-usa.com/cdn/shop/files/Haitch_Tuxedo_2_f2f8078e-42d0-48c0-b127-cc932556bd8e.png?v=1756129588';
 
+// Portrait crop of the same campaign shot — HAITCH's own mobile banner.
+export const HERO_IMAGE_MOBILE =
+  'https://haitch-usa.com/cdn/shop/files/Untitled_design.png?v=1756893485';
+
 export const GALLERY_IMAGES = [
   'https://haitch-usa.com/cdn/shop/files/Untitled-4_2df8367f-9ec4-4991-be8e-b3a70debfff1.jpg?v=1741302324',
   'https://haitch-usa.com/cdn/shop/files/2025-02-100001_52_1_copy_1.jpg?v=1744703823',

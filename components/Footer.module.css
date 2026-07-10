@@ -23,10 +23,18 @@
   white-space: nowrap;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
   .footer {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 28px;
+    align-items: center;
+    gap: 40px;
+    padding: 64px 24px 32px;
+    text-align: center;
+  }
+
+  .links {
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
   }
 }

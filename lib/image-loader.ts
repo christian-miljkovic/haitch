@@ -1,7 +1,8 @@
 'use client';
 
 import type { ImageLoaderProps } from 'next/image';
+import { shopifyImageLoader } from './shopify-image';
 
-export default function shopifyImageLoader({ src, width }: ImageLoaderProps): string {
-  return `${src}${src.includes('?') ? '&' : '?'}width=${width}`;
+export default function loader(props: ImageLoaderProps): string {
+  return shopifyImageLoader(props);
 }
