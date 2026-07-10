@@ -20,15 +20,17 @@ export default function Home() {
 
   return (
     <section className={styles.hero}>
-      <picture>
-        <source media="(max-width: 767px)" srcSet={mobileSrcSet} />
-        <source media="(min-width: 768px)" srcSet={desktopSrcSet} />
-        {/* eslint-disable-next-line jsx-a11y/alt-text -- alt comes via imgProps */}
-        <img {...imgProps} className={styles.heroImage} />
-      </picture>
-      <Link href="/shop" className={styles.cta}>
-        SHOP THE COLLECTION
-      </Link>
+      <div className={styles.frame}>
+        <picture>
+          <source media="(max-width: 767px)" srcSet={mobileSrcSet} />
+          <source media="(min-width: 768px)" srcSet={desktopSrcSet} />
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- alt comes via imgProps */}
+          <img {...imgProps} className={styles.heroImage} />
+        </picture>
+        <Link href="/shop" className={styles.cta}>
+          SHOP THE COLLECTION
+        </Link>
+      </div>
     </section>
   );
 }

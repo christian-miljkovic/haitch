@@ -1,7 +1,11 @@
 .hero {
-  position: relative;
   height: calc(100svh - var(--nav-height));
   min-height: 480px;
+}
+
+.frame {
+  position: relative;
+  height: 100%;
 }
 
 .heroImage {
@@ -32,15 +36,23 @@
 }
 
 @media (max-width: 767px) {
-  /* Portrait banner at natural ratio (no cropping), section still fills the
-     viewport so the footer stays below the fold. */
+  /* Portrait banner at natural ratio (no cropping); the section still fills
+     the viewport so the footer stays below the fold. The CTA anchors to the
+     photo itself, matching desktop. */
   .hero {
-    height: calc(100svh - var(--nav-height));
     min-height: 0;
+  }
+
+  .frame {
+    height: auto;
   }
 
   .heroImage {
     position: static;
     height: auto;
+  }
+
+  .cta {
+    bottom: 24px;
   }
 }
