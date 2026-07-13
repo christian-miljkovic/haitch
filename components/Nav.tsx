@@ -9,8 +9,8 @@ import styles from './Nav.module.css';
 const LINKS = [
   { href: '/shop', label: 'SHOP' },
   { href: '/collections', label: 'COLLECTIONS' },
-  { href: '/appointment', label: 'BOOK AN APPOINTMENT' },
   { href: '/about', label: 'ABOUT' },
+  { href: '/appointment', label: 'BOOK AN APPOINTMENT' },
 ];
 
 export default function Nav() {

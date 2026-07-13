@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import NewsletterModal from './NewsletterModal';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -12,7 +13,10 @@ export default function Footer() {
           <Link href="/about">ABOUT</Link>
         </li>
         <li>
-          <Link href="/appointment">APPOINTMENTS</Link>
+          <Link href="/appointment">BOOK AN APPOINTMENT</Link>
+        </li>
+        <li>
+          <NewsletterModal />
         </li>
         <li>
           <a href="https://www.instagram.com/haitch.usa" target="_blank" rel="noreferrer">
@@ -20,7 +24,7 @@ export default function Footer() {
           </a>
         </li>
         <li>
-          <a href="mailto:info@haitch-usa.com">CONTACT</a>
+          <Link href="/contact">CONTACT</Link>
         </li>
       </ul>
       <p className={styles.copyright}>© 2026 HAITCH</p>
