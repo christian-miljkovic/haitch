@@ -1,39 +1,44 @@
 import { describe, expect, test } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import ProductGrid from '@/components/ProductGrid';
-import { normalizeProducts } from '@/lib/shopify';
-import fixture from '@/lib/fixtures/products.json';
+import { getProducts } from '@/lib/catalog';
+import { makePurchasableProduct } from './helpers/products';
 
-const products = normalizeProducts(fixture);
+const products = getProducts();
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const tileFor = (handle: string) =>
+  screen.getAllByRole('link').find((a) => a.getAttribute('href') === `/products/${handle}`)!;
 
 describe('shop grid', () => {
-  test('renders a tile per product linking to its product page', () => {
+  test('renders a tile per look linking to its product page', () => {
     render(<ProductGrid products={products} />);
     for (const p of products) {
-      const tile = screen.getByRole('link', { name: new RegExp(p.title, 'i') });
-      expect(tile).toHaveAttribute('href', `/products/${p.handle}`);
+      expect(tileFor(p.handle)).toHaveAccessibleName(new RegExp(escape(p.title), 'i'));
     }
   });
 
-  test('every tile shows the product name and price', () => {
+  test('tiles carry the look’s first two photos for the hover swap', () => {
     render(<ProductGrid products={products} />);
-    const jacket = screen.getByRole('link', { name: /white track jacket/i });
-    expect(within(jacket).getByText('WHITE TRACK JACKET')).toBeInTheDocument();
-    expect(within(jacket).getByText(/\$\s?750/)).toBeInTheDocument();
-    const beanie = screen.getByRole('link', { name: /jet-black beanie/i });
-    expect(within(beanie).getByText(/\$\s?110/)).toBeInTheDocument();
-  });
-
-  test('tiles carry the product’s first two images for the hover swap', () => {
-    render(<ProductGrid products={products} />);
-    const p = products.find((x) => x.handle === 'white-track-jacket')!;
-    const tile = screen.getByRole('link', { name: /white track jacket/i });
+    const p = products.find((x) => x.handle === 'black-plain-weave-jacket')!;
+    const tile = tileFor(p.handle);
     const imgs = Array.from(tile.querySelectorAll('img'));
     expect(imgs.length).toBe(2);
-    const file = (u: string) => u.split('?')[0].split('/').pop()!;
     const srcs = imgs.map((i) => decodeURIComponent(i.getAttribute('src') ?? ''));
-    expect(srcs[0]).toContain(file(p.images[0]));
-    expect(srcs[1]).toContain(file(p.images[1]));
-    expect(imgs[0]).toHaveAccessibleName(/white track jacket/i);
+    expect(srcs[0]).toContain(p.images[0]);
+    expect(srcs[1]).toContain(p.images[1]);
+    expect(imgs[0]).toHaveAccessibleName(/black plain weave jacket/i);
+  });
+
+  test('shows a price only when the product has one', () => {
+    const priced = makePurchasableProduct();
+    const unpriced = makePurchasableProduct({
+      handle: 'test-look',
+      title: 'TEST LOOK',
+      price: undefined,
+      variants: [],
+    });
+    render(<ProductGrid products={[priced, unpriced]} />);
+    expect(within(tileFor(priced.handle)).getByText(/\$\s?750/)).toBeInTheDocument();
+    expect(within(tileFor(unpriced.handle)).queryByText(/\$/)).not.toBeInTheDocument();
   });
 });

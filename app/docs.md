@@ -4,31 +4,33 @@ Path: @/app
 
 ### Overview
 
-Next.js App Router routes for the storefront: the hero landing page, shop grid, product detail pages, editorial collections gallery, appointment booking, about, and the custom checkout stepper. Pages are thin — they fetch data from @/lib and compose components from @/components, with styling in colocated CSS Modules plus @/app/globals.css.
+Next.js App Router routes for the storefront: the hero landing page, shop grid, product detail pages, editorial collections gallery, appointment booking, about, contact, and the custom checkout stepper. Pages are thin — they read data from @/lib and compose components from @/components, with styling in colocated CSS Modules plus @/app/globals.css.
 
 ### How it fits into the larger codebase
 
-@/app/layout.tsx is the composition root: it wraps every page in `CartProvider` (from @/components/CartContext.tsx) and mounts the global `Nav`, `Footer`, and `BagDrawer`, so cart state is available on every route. Catalog-driven pages (`/shop`, `/products/[handle]`) call `getProducts`/`getProduct` from @/lib/shopify.ts; image-driven pages (`/`, `/collections`) read curated URLs from @/lib/gallery.ts. `/checkout` renders @/components/CheckoutFlow.tsx, which ends by linking out to Shopify's hosted checkout.
+@/app/layout.tsx is the composition root: it wraps every page in `CartProvider` (from @/components/CartContext.tsx) and mounts the global `Nav`, `Footer`, and `BagDrawer`, so cart state is available on every route. Catalog-driven pages (`/shop`, `/products/[handle]`) call the synchronous `getProducts`/`getProduct` from @/lib/catalog.ts; image-driven pages (`/`, `/collections`) read curated Shopify CDN URLs from @/lib/gallery.ts. `/checkout` renders @/components/CheckoutFlow.tsx, which ends by linking out to Shopify's hosted checkout.
 
 ### Core Implementation
 
 | Route | Rendering | Notes |
 |---|---|---|
-| `/` | Static | Full-bleed hero image (`HERO_IMAGE`) with a SHOP THE COLLECTION link |
-| `/shop` | ISR (`revalidate = 600`) | Fetches products, renders `ProductGrid` (4-across, hover image swap) |
-| `/products/[handle]` | SSG via `generateStaticParams` + ISR 600s | `notFound()` on unknown handle; `ProductGallery` scroll column + sticky purchase panel with `AddToCart`; shows a MADE TO ORDER note when the description matches `/made to order/i` |
+| `/` | Static | Full-bleed hero `<picture>` (`HERO_IMAGE` / `HERO_IMAGE_MOBILE`) built with `getImageProps` and the explicit `shopifyImageLoader`; SHOP THE COLLECTION link |
+| `/shop` | Static | Renders `ProductGrid` over `getProducts()` in look order (4-across, hover image swap) |
+| `/products/[handle]` | SSG via sync `generateStaticParams` | `notFound()` on unknown handle; `ProductGallery` scroll column + sticky purchase panel |
 | `/collections` | Static | Masonry gallery over `GALLERY_IMAGES` |
 | `/appointment` | Static shell | Renders client `AppointmentForm` (Formspree) |
-| `/about` | Static | Brand copy only |
+| `/about`, `/contact` | Static | Brand copy / contact info |
 | `/checkout` | Static shell | Renders client `CheckoutFlow`; all state is client-side |
+
+The product panel in @/app/products/[handle]/page.tsx is driven by what the catalog entry carries: the price line renders only when `product.price` is defined, `AddToCart` renders only when `product.variants.length > 0`, a `SIZES: …` line shows the display-only size run, `SizeGuide` follows, then the description, and a MORE DETAILS section (`h2`) renders each `ProductDetailGroup` as an `h3` plus `<ul>`. Because no current look has variants or a price, the panel today shows title, sizes, size guide, description, details, and the appointment/service links only.
 
 Metadata uses the root template `%s — HAITCH`; each page exports its own `title`. `params` on the product page is a Promise (Next 16 convention) and is awaited.
 
 ### Things to Know
 
-- ISR + fixture fallback means catalog pages always build: if the live `products.json` is unreachable at build or revalidate time, @/lib/shopify.ts serves the committed fixture, so `generateStaticParams` still yields handles.
+- There is no ISR anywhere on catalog routes: the catalog is in-repo, so `export const revalidate` was removed and both pages build fully static. Adding a look means editing @/lib/catalog.ts (and re-running the import script for photos), then redeploying.
 - `/checkout` and `/appointment` pages are server components that only host client components — no data fetching happens on these routes.
-- Product-page freshness is bounded by the 600s revalidate on both the page (`export const revalidate`) and the underlying fetch in @/lib/shopify.ts.
-- All `next/image` usage routes through the custom Shopify CDN loader configured in @/next.config.ts; `sizes` props are tuned per layout (e.g. `25vw` grid tiles, `55vw` gallery slides).
+- The old "MADE TO ORDER" note derived from a description regex is gone; the new line-sheet descriptions already end with "Made to order. 5-6 week production time."
+- Local look images (`/looks/look-N/NN.jpg`) use Next's default image optimizer. Only the landing hero passes a `loader` (@/lib/shopify-image.ts); `/collections` and other Shopify-hosted images rely on the `remotePatterns` allowlist in @/next.config.ts. `sizes` props are tuned per layout (e.g. `25vw` grid tiles, `55vw` gallery slides).
 
 Created and maintained by Nori.

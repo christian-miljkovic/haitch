@@ -5,17 +5,14 @@ import { CartProvider } from '@/components/CartContext';
 import Nav from '@/components/Nav';
 import BagDrawer from '@/components/BagDrawer';
 import AddToCart from '@/components/AddToCart';
-import { normalizeProducts } from '@/lib/shopify';
-import fixture from '@/lib/fixtures/products.json';
+import { makePurchasableProduct } from './helpers/products';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/shop',
   useRouter: () => ({ push: vi.fn(), prefetch: vi.fn() }),
 }));
 
-const products = normalizeProducts(fixture);
-const jacket = products.find((p) => p.handle === 'white-track-jacket')!;
-const shirt = products.find((p) => p.handle === 'bob-shirt-in-white-stripe')!;
+const jacket = makePurchasableProduct();
 
 function renderShop(product = jacket) {
   return render(
@@ -38,7 +35,7 @@ describe('bag', () => {
     await user.click(screen.getByRole('button', { name: /add to cart/i }));
 
     const drawer = screen.getByRole('dialog');
-    expect(within(drawer).getByText('WHITE TRACK JACKET')).toBeInTheDocument();
+    expect(within(drawer).getByText('TEST JACKET')).toBeInTheDocument();
     expect(within(drawer).getByText('M')).toBeInTheDocument();
     expect(within(drawer).getAllByText(/\$\s?750/).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /bag \(1\)/i })).toBeInTheDocument();
@@ -52,7 +49,7 @@ describe('bag', () => {
     await user.click(screen.getByRole('button', { name: /add to cart/i }));
 
     const drawer = screen.getByRole('dialog');
-    expect(within(drawer).getAllByText('WHITE TRACK JACKET')).toHaveLength(1);
+    expect(within(drawer).getAllByText('TEST JACKET')).toHaveLength(1);
     expect(within(drawer).getByText('2')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /bag \(2\)/i })).toBeInTheDocument();
   });
@@ -97,7 +94,7 @@ describe('bag', () => {
   });
 
   test('sold-out sizes cannot be selected', () => {
-    renderShop(shirt);
+    renderShop();
     const select = screen.getByLabelText(/size/i);
     expect(within(select).getByRole('option', { name: /^S\b/ })).toBeDisabled();
     expect(within(select).getByRole('option', { name: /^L\b/ })).toBeEnabled();

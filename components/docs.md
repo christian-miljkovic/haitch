@@ -4,11 +4,11 @@ Path: @/components
 
 ### Overview
 
-All shared UI for the storefront: global chrome (Nav, Footer, BagDrawer), the cart state provider (CartContext), and the page-level interactive pieces (ProductGrid, ProductGallery, AddToCart, CheckoutFlow, AppointmentForm). Each component pairs with a CSS Module of the same name.
+All shared UI for the storefront: global chrome (Nav, Footer, BagDrawer, NewsletterModal), the cart state provider (CartContext), and the page-level interactive pieces (ProductGrid, ProductGallery, AddToCart, SizeGuide, CheckoutFlow, AppointmentForm). Each component pairs with a CSS Module of the same name.
 
 ### How it fits into the larger codebase
 
-@/app/layout.tsx mounts `CartProvider`, `Nav`, `Footer`, and `BagDrawer` around every page; the remaining components are rendered by individual routes in @/app. Components consume the `Product`/`ProductVariant` types and `formatPrice` from @/lib, and `CheckoutFlow` calls `buildCheckoutUrl` from @/lib/checkout.ts to hand off to Shopify's hosted checkout. Each component follows a named external design reference: Nav (The Row), BagDrawer and ProductGallery (YSL), ProductGrid and CheckoutFlow (Rick Owens), AppointmentForm (Phoebe Philo), Footer (Emily Dawn Long).
+@/app/layout.tsx mounts `CartProvider`, `Nav`, `Footer`, and `BagDrawer` around every page; the remaining components are rendered by individual routes in @/app. Components consume the `Product`/`ProductVariant` types from @/lib/product.ts and `formatPrice` from @/lib/format.ts, and `CheckoutFlow` calls `buildCheckoutUrl` from @/lib/checkout.ts to hand off to Shopify's hosted checkout. Each component follows a named external design reference: Nav (The Row), BagDrawer and ProductGallery (YSL), ProductGrid and CheckoutFlow (Rick Owens), AppointmentForm (Phoebe Philo), Footer (Emily Dawn Long).
 
 ### Core Implementation
 
@@ -25,9 +25,9 @@ mutations     ──▶ writeLines() → localStorage + notify listeners
 **Other components:**
 - `Nav` — client component; scroll-aware header styling, active-link highlighting via `usePathname`, mobile full-screen menu, and the `BAG (n)` button that opens the drawer.
 - `BagDrawer` — slide-in dialog rendering bag lines with quantity controls, linking to `/checkout`. Returns `null` when closed.
-- `AddToCart` — size `<select>` that disables sold-out variants (labels them `— SOLD OUT`), defaults to the first available size, and disables the button entirely when nothing is available.
-- `ProductGrid` — server component; borderless tile grid where each tile stacks the first two product images for a CSS hover swap.
-- `ProductGallery` — vertical scroll gallery with an `IntersectionObserver` (threshold 0.55) driving the `current / total` image counter.
+- `AddToCart` — size `<select>` that disables sold-out variants (labels them `— SOLD OUT`), defaults to the first available size, and disables the button entirely when nothing is available. The product page only mounts it when the product has variants.
+- `ProductGrid` — server component; borderless tile grid where each tile stacks the first two product images for a CSS hover swap. The price span renders only when `p.price` is defined. The first four tiles use `loading="eager"`, the rest lazy-load.
+- `ProductGallery` — vertical scroll gallery with an `IntersectionObserver` (threshold 0.55) driving the `current / total` image counter. Slides declare an intrinsic 2000×2500 (4:5) size matching the committed look photos, and the first slide sets `preload`.
 - `CheckoutFlow` — Rick Owens-style stepper (BAG → INFORMATION → SHIPPING → PAYMENT). Steps gate on validation (`informationValid` requires email regex + names; `shippingValid` requires address1/city/zip); the final step is an `<a>` whose href is the `buildCheckoutUrl` permalink. Renders an empty-bag state when there are no lines.
 - `AppointmentForm` — one-field-at-a-time form (name → email → phone → message) with per-field validation and Enter-to-advance; submits JSON to `https://formspree.io/f/{NEXT_PUBLIC_FORMSPREE_ID}` and tracks `idle | sending | sent | error` status.
 
@@ -37,6 +37,7 @@ mutations     ──▶ writeLines() → localStorage + notify listeners
 - Quantity controls implement removal implicitly: `setQuantity` with a value below 1 filters the line out.
 - Cart mutation closures capture `lines` from the current snapshot inside `useMemo`, so all mutations derive from the latest storage-backed state rather than component-local state.
 - The checkout total shown in `CheckoutFlow` and `BagDrawer` is the subtotal only; shipping (and tax) are "CALCULATED AT CHECKOUT" on Shopify's side.
-- `AddToCart`'s `madeToOrder` note is not here — it lives in the product page (@/app/products/[handle]/page.tsx), keyed off the product description text.
+- `ProductGrid` and `ProductGallery` pass site-relative `/looks/...` paths to `next/image`, so they go through Next's built-in optimizer; `BagDrawer`/`CheckoutFlow` may render legacy `cdn.shopify.com` images from bag lines persisted before the catalog switch, which is why that host remains allowlisted in @/next.config.ts.
+- The cart and checkout code paths are fully exercised by tests with a synthetic purchasable product, but no product in the live catalog currently has variants, so they are unreachable from the UI until Shopify variants are supplied.
 
 Created and maintained by Nori.

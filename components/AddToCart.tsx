@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useState } from 'react';
-import type { Product } from '@/lib/shopify';
+import type { Product } from '@/lib/product';
 import { useCart } from './CartContext';
 import styles from './AddToCart.module.css';
 

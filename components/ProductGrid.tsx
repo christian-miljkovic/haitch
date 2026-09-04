@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product } from '@/lib/shopify';
+import type { Product } from '@/lib/product';
 import { formatPrice } from '@/lib/format';
 import styles from './ProductGrid.module.css';
 
@@ -16,7 +16,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
                 alt={p.title}
                 fill
                 sizes="(max-width: 767px) 50vw, 25vw"
-                priority={i < 4}
+                loading={i < 4 ? 'eager' : undefined}
                 className={styles.primary}
               />
             )}
@@ -32,7 +32,7 @@ export default function ProductGrid({ products }: { products: Product[] }) {
           </div>
           <div className={styles.meta}>
             <span className={styles.name}>{p.title}</span>
-            <span>{formatPrice(p.price)}</span>
+            {p.price !== undefined && <span>{formatPrice(p.price)}</span>}
           </div>
         </Link>
       ))}

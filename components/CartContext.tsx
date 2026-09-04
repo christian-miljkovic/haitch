@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useMemo, useState, useSyncExternalStore } from 'react';
-import type { Product, ProductVariant } from '@/lib/shopify';
+import type { Product, ProductVariant } from '@/lib/product';
 
 export type BagLine = {
   variantId: number;

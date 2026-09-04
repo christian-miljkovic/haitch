@@ -45,10 +45,10 @@ export default function ProductGallery({ images, title }: { images: string[]; ti
             <Image
               src={src}
               alt={i === 0 ? title : `${title}, view ${i + 1}`}
-              width={1200}
-              height={1600}
+              width={2000}
+              height={2500}
               sizes="(max-width: 900px) 100vw, 55vw"
-              priority={i === 0}
+              preload={i === 0}
               className={styles.image}
             />
           </div>

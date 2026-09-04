@@ -5,30 +5,24 @@ import AddToCart from '@/components/AddToCart';
 import ProductGallery from '@/components/ProductGallery';
 import SizeGuide from '@/components/SizeGuide';
 import { formatPrice } from '@/lib/format';
-import { getProduct, getProducts } from '@/lib/shopify';
+import { getProduct, getProducts } from '@/lib/catalog';
 import styles from './page.module.css';
-
-export const revalidate = 600;
 
 type Props = { params: Promise<{ handle: string }> };
 
-export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((p) => ({ handle: p.handle }));
+export function generateStaticParams() {
+  return getProducts().map((p) => ({ handle: p.handle }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = await params;
-  const product = await getProduct(handle);
-  return { title: product?.title ?? 'Product' };
+  return { title: getProduct(handle)?.title ?? 'Product' };
 }
 
 export default async function ProductPage({ params }: Props) {
   const { handle } = await params;
-  const product = await getProduct(handle);
+  const product = getProduct(handle);
   if (!product) notFound();
-
-  const madeToOrder = /made to order/i.test(product.description);
 
   return (
     <div className={styles.layout}>
@@ -39,16 +33,30 @@ export default async function ProductPage({ params }: Props) {
       <div className={styles.panelWrap}>
         <div className={styles.panel}>
           <h1 className={styles.title}>{product.title}</h1>
-          <p className={styles.price}>{formatPrice(product.price)}</p>
+          {product.price !== undefined && <p className={styles.price}>{formatPrice(product.price)}</p>}
 
-          <AddToCart product={product} />
+          {product.variants.length > 0 && <AddToCart product={product} />}
+
+          <p className={styles.sizes}>SIZES: {product.sizes}</p>
 
           <SizeGuide />
 
           <p className={styles.description}>{product.description}</p>
 
-          {madeToOrder && (
-            <p className={styles.note}>MADE TO ORDER IN NEW YORK CITY — 4–6 WEEK PRODUCTION</p>
+          {product.details.length > 0 && (
+            <div className={styles.details}>
+              <h2 className={styles.detailsHeading}>MORE DETAILS</h2>
+              {product.details.map((group) => (
+                <div key={group.heading} className={styles.detailGroup}>
+                  <h3 className={styles.detailGroupHeading}>{group.heading}</h3>
+                  <ul role="list">
+                    {group.items.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           )}
 
           <ul className={styles.links}>

@@ -4,15 +4,14 @@ import userEvent from '@testing-library/user-event';
 import { CartProvider } from '@/components/CartContext';
 import AddToCart from '@/components/AddToCart';
 import CheckoutFlow from '@/components/CheckoutFlow';
-import { normalizeProducts } from '@/lib/shopify';
-import fixture from '@/lib/fixtures/products.json';
+import { makePurchasableProduct } from './helpers/products';
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/checkout',
   useRouter: () => ({ push: vi.fn(), prefetch: vi.fn() }),
 }));
 
-const jacket = normalizeProducts(fixture).find((p) => p.handle === 'white-track-jacket')!;
+const jacket = makePurchasableProduct();
 const mediumVariant = jacket.variants.find((v) => v.size === 'M')!;
 
 async function renderCheckoutWithItem() {
@@ -40,7 +39,7 @@ describe('checkout flow', () => {
       expect(step(label)).toBeInTheDocument();
     }
     expect(step(/bag/i)).toHaveAttribute('aria-current', 'step');
-    expect(screen.getByText('WHITE TRACK JACKET')).toBeInTheDocument();
+    expect(screen.getByText('TEST JACKET')).toBeInTheDocument();
     expect(screen.getAllByText(/\$\s?750/).length).toBeGreaterThan(0);
   });
 

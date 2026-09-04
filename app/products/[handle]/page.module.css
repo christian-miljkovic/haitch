@@ -36,9 +36,40 @@
   line-height: 1.8;
 }
 
-.note {
-  font-size: 10px;
+.sizes {
+  font-size: 11px;
+  letter-spacing: var(--tracking);
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detailsHeading {
+  font-size: 11px;
+  font-weight: inherit;
+  letter-spacing: var(--tracking);
+}
+
+.detailGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detailGroupHeading {
+  font-size: inherit;
+  font-weight: inherit;
   color: var(--muted);
+}
+
+.detailGroup ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1.8;
 }
 
 .links {

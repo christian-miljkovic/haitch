@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "import:looks": "node scripts/import-looks.mjs"
   },
   "dependencies": {
     "next": "16.2.10",
@@ -26,6 +27,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "jsdom": "^29.1.1",
+    "sharp": "^0.34.5",
     "typescript": "^5",
     "vitest": "^4.1.10"
   }
