@@ -23,7 +23,7 @@ mutations     ──▶ writeLines() → localStorage + notify listeners
 `getSnapshot` caches the parsed lines keyed on the raw string so React receives a stable reference between renders. If storage writes fail (private mode, quota), `writeLines` falls back to updating the in-memory cache so the bag still works for the session. `BagLine` denormalizes product data (title, size, price, image) at add-time keyed by `variantId`; `add()` also opens the drawer. Drawer open/close is plain `useState`, not persisted.
 
 **Other components:**
-- `Nav` — client component; scroll-aware header styling, active-link highlighting via `usePathname`, mobile full-screen menu, and the `BAG (n)` button that opens the drawer.
+- `Nav` — client component; scroll-aware header styling, active-link highlighting via `usePathname`, mobile full-screen menu behind an icon-only hamburger toggle (two hairlines that fold into an X, labelled "Open menu"/"Close menu" for screen readers), and the `BAG (n)` button that opens the drawer.
 - `BagDrawer` — slide-in dialog rendering bag lines with quantity controls, linking to `/checkout`. Returns `null` when closed.
 - `AddToCart` — size `<select>` that disables sold-out variants (labels them `— SOLD OUT`), defaults to the first available size, and disables the button entirely when nothing is available. The product page only mounts it when the product has variants.
 - `ProductGrid` — server component; borderless tile grid where each tile stacks the first two product images for a CSS hover swap. The price span renders only when `p.price` is defined. The first four tiles use `loading="eager"`, the rest lazy-load.

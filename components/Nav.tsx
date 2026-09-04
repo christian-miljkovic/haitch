@@ -32,9 +32,10 @@ export default function Nav() {
         <button
           className={styles.menuButton}
           aria-expanded={menuOpen}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           onClick={() => setMenuOpen((v) => !v)}
         >
-          {menuOpen ? 'CLOSE' : 'MENU'}
+          <span className={`${styles.burger} ${menuOpen ? styles.burgerOpen : ''}`} aria-hidden="true" />
         </button>
 
         <ul className={styles.links}>
