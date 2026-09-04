@@ -7,13 +7,21 @@ import looks from '@/lib/looks.json';
 const publicDir = path.join(process.cwd(), 'public');
 
 describe('catalog', () => {
-  test('offers the twelve looks in look order with unique handles', () => {
-    const products = getProducts();
-    expect(products).toHaveLength(12);
-    expect(new Set(products.map((p) => p.handle)).size).toBe(12);
-    // Look 1 is the blue stripe shirt, Look 12 the stone grey trousers.
-    expect(products[0].title).toBe('CONTRAST COLLAR SHIRT IN BLUE STRIPE');
-    expect(products[11].title).toBe('STONE GREY GABARDINE TROUSERS');
+  test('offers the twelve looks in line-sheet order: jackets, trousers, shirts', () => {
+    expect(getProducts().map((p) => p.handle)).toEqual([
+      'tuxedo-jacket-in-black-barathea',
+      'black-plain-weave-jacket',
+      'dark-navy-jacket-with-grey-pinstripe',
+      'double-breasted-jacket-in-petrol-blue-gabardine',
+      'tuxedo-trousers-in-black-barathea',
+      'black-plain-weave-trousers',
+      'grey-marle-pinstripe-trousers',
+      'stone-grey-gabardine-trousers',
+      'light-grey-cotton-trousers',
+      'contrast-collar-shirt-in-silver-sateen',
+      'contrast-collar-shirt-in-blue-stripe',
+      'shirt-in-pink-stripe',
+    ]);
   });
 
   test('every image referenced by a product exists on disk under public/', () => {

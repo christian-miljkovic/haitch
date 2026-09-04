@@ -15,7 +15,7 @@ Next.js App Router routes for the storefront: the hero landing page, shop grid, 
 | Route | Rendering | Notes |
 |---|---|---|
 | `/` | Static | Full-bleed hero `<picture>` (`HERO_IMAGE` / `HERO_IMAGE_MOBILE`) built with `getImageProps` and the explicit `shopifyImageLoader`; SHOP THE COLLECTION link |
-| `/shop` | Static | Renders `ProductGrid` over `getProducts()` in look order (4-across, hover image swap) |
+| `/shop` | Static | Renders `ProductGrid` over `getProducts()` in line-sheet order (jackets, trousers, shirts) (4-across, hover image swap) |
 | `/products/[handle]` | SSG via sync `generateStaticParams` | `notFound()` on unknown handle; `ProductGallery` scroll column + sticky purchase panel |
 | `/collections` | Static | Masonry gallery over `GALLERY_IMAGES` |
 | `/appointment` | Static shell | Renders client `AppointmentForm` (Formspree) |
