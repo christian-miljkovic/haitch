@@ -9,22 +9,17 @@ export default function AboutPage() {
       <h1 className={styles.heading}>ABOUT</h1>
       <div className={styles.body}>
         <p>
-          HAITCH was founded in 2024 by Harry Tillman and Nate Pozin, born of a shared vision for
-          how clothing should feel, function, and endure.
+          HAITCH is a luxury clothing brand focused on modern tailoring and refined wardrobe
+          essentials. Founders Harry Tillman and Nate Pozin bring over 15 years of combined
+          experience in bespoke tailoring and luxury fashion. Drawing on Savile Row principles of
+          craftsmanship, quality, and longevity, HAITCH creates contemporary clothing that explores
+          the balance of beauty, utility, luxury, and tradition.
         </p>
         <p>
-          Our mission is to make contemporary clothing that explores the balance of beauty,
-          utility, luxury, and restraint.
-        </p>
-        <p>
-          Harry spent more than a decade in luxury tailoring in the Savile Row tradition, most
-          recently at Thom Sweeney; Nate arrived by way of music, consulting, and brand strategy.
-          They met at Thom Sweeney New York.
-        </p>
-        <p>
-          HAITCH is committed to creating a socially and ecologically responsible fashion house. We
-          minimize waste and avoid overproduction: all HAITCH garments are made in New York City,
-          and all tailoring items are made to order.
+          HAITCH offers bespoke, made-to-measure, and made-to-order clothing, producing expertly
+          crafted garments globally using fabrics from leading mills around the world.
+          Consultations are available by appointment at HAITCH’s New York City showroom and trunk
+          shows around the country.
         </p>
       </div>
     </div>
