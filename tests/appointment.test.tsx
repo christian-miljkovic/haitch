@@ -76,4 +76,41 @@ describe('book an appointment form', () => {
     });
     expect(await screen.findByText(/thank you/i)).toBeInTheDocument();
   });
+
+  test('explains what is wrong under the field instead of silently refusing to advance', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentForm />);
+
+    await user.type(screen.getByLabelText(/full name/i), '{Enter}');
+    const name = screen.getByLabelText(/full name/i);
+    expect(name).toHaveAccessibleDescription(/enter your full name/i);
+    expect(name).toHaveAttribute('aria-invalid', 'true');
+
+    await user.type(name, 'Harry');
+    expect(name).not.toHaveAttribute('aria-invalid', 'true');
+    expect(screen.queryByText(/enter your full name/i)).not.toBeInTheDocument();
+
+    await user.keyboard('{Enter}');
+    await user.type(screen.getByLabelText(/email/i), 'not-an-email');
+    await user.click(screen.getByRole('button', { name: /next/i }));
+    expect(screen.getByLabelText(/email/i)).toHaveAccessibleDescription(/valid email/i);
+
+    await user.clear(screen.getByLabelText(/email/i));
+    await user.type(screen.getByLabelText(/email/i), 'harry@example.com{Enter}');
+    await user.type(screen.getByLabelText(/phone/i), '12{Enter}');
+    expect(screen.getByLabelText(/phone/i)).toHaveAccessibleDescription(/valid phone/i);
+
+    await user.type(screen.getByLabelText(/phone/i), '34567{Enter}');
+    await user.click(screen.getByRole('button', { name: /submit/i }));
+    expect(screen.getByLabelText(/message/i)).toHaveAccessibleDescription(/enter a message/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test('flags an invalid field when it loses focus', async () => {
+    const user = userEvent.setup();
+    render(<AppointmentForm />);
+    await user.click(screen.getByLabelText(/full name/i));
+    await user.tab();
+    expect(screen.getByLabelText(/full name/i)).toHaveAccessibleDescription(/enter your full name/i);
+  });
 });

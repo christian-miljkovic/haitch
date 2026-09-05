@@ -1,28 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { EMAIL_RE } from '@/lib/format';
+import { email, phone, required, type Validator } from '@/lib/validation';
+import FieldError from './FieldError';
 import styles from './AppointmentForm.module.css';
 
 const FORMSPREE_ID = process.env.NEXT_PUBLIC_FORMSPREE_ID ?? 'placeholder';
 
 type FieldKey = 'name' | 'email' | 'phone' | 'message';
 
-const FIELDS: { key: FieldKey; label: string; type: string; validate: (v: string) => boolean }[] = [
-  { key: 'name', label: 'FULL NAME', type: 'text', validate: (v) => v.trim().length > 1 },
-  {
-    key: 'email',
-    label: 'EMAIL',
-    type: 'email',
-    validate: (v) => EMAIL_RE.test(v.trim()),
-  },
-  {
-    key: 'phone',
-    label: 'PHONE NUMBER',
-    type: 'tel',
-    validate: (v) => v.replace(/\D/g, '').length >= 7,
-  },
-  { key: 'message', label: 'MESSAGE', type: 'textarea', validate: (v) => v.trim().length > 0 },
+const FIELDS: { key: FieldKey; label: string; type: string; validate: Validator }[] = [
+  { key: 'name', label: 'FULL NAME', type: 'text', validate: required('Enter your full name.') },
+  { key: 'email', label: 'EMAIL', type: 'email', validate: email },
+  { key: 'phone', label: 'PHONE NUMBER', type: 'tel', validate: phone },
+  { key: 'message', label: 'MESSAGE', type: 'textarea', validate: required('Enter a message.') },
 ];
 
 export default function AppointmentForm() {
@@ -33,18 +24,29 @@ export default function AppointmentForm() {
     phone: '',
     message: '',
   });
+  const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
   const field = FIELDS[step];
   const isLast = step === FIELDS.length - 1;
-  const valid = field.validate(values[field.key]);
+  const error = field.validate(values[field.key]);
+  const shownError = touched ? error : null;
+  const inputId = `appointment-${field.key}`;
+  const errorId = `${inputId}-error`;
+
+  const goTo = (next: number) => {
+    setStep(next);
+    setTouched(false);
+  };
 
   const advance = () => {
-    if (valid && !isLast) setStep((s) => s + 1);
+    setTouched(true);
+    if (!error && !isLast) goTo(step + 1);
   };
 
   const submit = async () => {
-    if (!FIELDS.every((f) => f.validate(values[f.key]))) return;
+    setTouched(true);
+    if (FIELDS.some((f) => f.validate(values[f.key]))) return;
     setStatus('sending');
     try {
       const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
@@ -69,9 +71,20 @@ export default function AppointmentForm() {
 
   const setValue = (v: string) => setValues((prev) => ({ ...prev, [field.key]: v }));
 
+  const fieldProps = {
+    id: inputId,
+    value: values[field.key],
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setValue(e.target.value),
+    onBlur: () => setTouched(true),
+    'aria-invalid': shownError ? true : undefined,
+    'aria-describedby': shownError ? errorId : undefined,
+    autoFocus: true,
+  };
+
   return (
     <form
       className={styles.root}
+      noValidate
       onSubmit={(e) => {
         e.preventDefault();
         if (isLast) submit();
@@ -83,48 +96,39 @@ export default function AppointmentForm() {
       </p>
 
       <div className={styles.field} key={field.key}>
-        <label htmlFor={`appointment-${field.key}`} className={styles.label}>
+        <label htmlFor={inputId} className={styles.label}>
           {field.label}
         </label>
         {field.type === 'textarea' ? (
-          <textarea
-            id={`appointment-${field.key}`}
-            className={styles.textarea}
-            rows={4}
-            value={values[field.key]}
-            onChange={(e) => setValue(e.target.value)}
-            autoFocus
-          />
+          <textarea {...fieldProps} className={styles.textarea} rows={4} />
         ) : (
           <input
-            id={`appointment-${field.key}`}
+            {...fieldProps}
             className={styles.input}
             type={field.type}
-            value={values[field.key]}
-            onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
                 advance();
               }
             }}
-            autoFocus
           />
         )}
+        <FieldError id={errorId} message={shownError} />
       </div>
 
       {isLast ? (
-        <button type="submit" className={styles.submit} disabled={!valid || status === 'sending'}>
+        <button type="submit" className={styles.submit} disabled={status === 'sending'}>
           {status === 'sending' ? 'SENDING…' : 'SUBMIT'}
         </button>
       ) : (
-        <button type="submit" className={styles.next} disabled={!valid}>
+        <button type="submit" className={styles.next}>
           NEXT
         </button>
       )}
 
       {step > 0 && (
-        <button type="button" className={styles.back} onClick={() => setStep((s) => s - 1)}>
+        <button type="button" className={styles.back} onClick={() => goTo(step - 1)}>
           BACK
         </button>
       )}

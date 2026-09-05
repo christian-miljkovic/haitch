@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "import:looks": "node scripts/import-looks.mjs"
+    "import:looks": "node scripts/import-looks.mjs",
+    "import:lookbook": "node scripts/import-lookbook.mjs"
   },
   "dependencies": {
     "next": "16.2.10",

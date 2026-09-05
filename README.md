@@ -8,8 +8,8 @@ Redesigned storefront for [haitch-usa.com](https://haitch-usa.com) — a NYC men
 - **Prices and purchasing** — intentionally absent for now. The new looks do not exist in Shopify yet, so every product has no `price` and no `variants`; the product page hides the price and the add-to-cart control until those are supplied.
 - **Bag** — client-side cart in `localStorage` (`components/CartContext.tsx`), YSL-style slide-in drawer.
 - **Checkout** — custom Bag → Information → Shipping steps (`/checkout`), then a hand-off to Shopify's hosted checkout via a cart permalink with contact/address prefilled. Shop Pay / shop.app, Apple Pay, Google Pay and cards all appear there automatically. (Shopify does not allow custom payment pages — the hosted checkout is where Shop Pay lives.)
-- **Appointments / newsletter** — post to Formspree.
-- **Images** — look photos are local and served through Next's built-in image optimizer. The landing hero, collections gallery and newsletter image still come from the Shopify CDN (allowlisted in `next.config.ts`); only the hero uses the explicit `lib/shopify-image.ts` loader.
+- **Appointments / newsletter** — post to Formspree. Every form (appointment, newsletter, checkout) validates inline: a message appears under a field once it is blurred or the user tries to advance, and advancing/submitting is blocked until the step passes (`lib/validation.ts`, `components/FieldError.tsx`).
+- **Images** — look photos (`public/looks`) and the collections gallery / newsletter image (`public/lookbook`, the LOOKBOOK shoot indexed by `lib/lookbook.json` with real dimensions) are local and served through Next's built-in image optimizer. Only the landing hero still comes from the Shopify CDN (allowlisted in `next.config.ts`) via the explicit `lib/shopify-image.ts` loader.
 
 ## Development
 
@@ -29,13 +29,21 @@ npm run import:looks -- ~/path/to/High-res-Ecom   # [--width 2000] [--quality 80
 
 `scripts/import-looks.mjs` reads a folder of `Look N/` directories of high-res JPEGs, downscales each to 2000px wide with sharp (EXIF-rotated, mozjpeg, never enlarged), writes `public/looks/look-N/01.jpg…` in filename order, removes stale output, and regenerates `lib/looks.json`. Do not hand-edit the manifest. Copy (titles, sizes, descriptions, details) is edited in `lib/catalog.ts`.
 
+## Importing the lookbook
+
+```bash
+npm run import:lookbook -- ~/path/to/LOOKBOOK   # [--max-width 1600] [--max-height 2000] [--quality 78]
+```
+
+`scripts/import-lookbook.mjs` walks the LOOKBOOK folder recursively (root and `BOOKLET SELECTS`, jpg and png), keeps one file per 4-digit frame number in the filename (largest file wins when a frame was exported twice), EXIF-rotates and downscales each to fit inside the max box with sharp (never enlarged), writes `public/lookbook/<frame>.jpg` in frame order, removes stale output, and regenerates `lib/lookbook.json` with each image's `src`, `width` and `height`. The committed gallery uses the defaults (1600×2000 box, quality 78), which suit a three-column gallery. Do not hand-edit the manifest; `/collections` and the newsletter modal read it through `lib/gallery.ts`.
+
 ## Environment
 
 | Variable | Purpose |
 | --- | --- |
-| `NEXT_PUBLIC_FORMSPREE_ID` | Formspree form ID for the appointment form (create one at formspree.io) |
+| `NEXT_PUBLIC_FORMSPREE_ID` | Formspree form ID for the appointment and newsletter forms (create one at formspree.io) |
 
-Without it the appointment form still renders but submissions will fail.
+Without it the forms still render but submissions will fail.
 
 ## Deploying to Vercel
 
@@ -43,7 +51,7 @@ Zero-config: import the repo in Vercel, set `NEXT_PUBLIC_FORMSPREE_ID`, deploy. 
 
 ## Tests
 
-Behavior tests live in `tests/` — catalog integrity (twelve looks, unique handles, every image on disk), the photo import script (run for real against generated JPEGs), the product page in both priced and unpriced states, checkout permalink construction, bag behavior (add/quantity/remove/persistence), bag drawer, appointment form field progression, checkout stepper, and shop grid. Cart and checkout tests use a synthetic purchasable product from `tests/helpers/products.ts`.
+Behavior tests live in `tests/` — catalog integrity (twelve looks, unique handles, every image on disk), both import scripts (run for real with sharp against generated images: resizing, dedupe by frame, stale cleanup, manifests), the collections gallery (every lookbook frame on disk, one `img` per frame with matching width/height), the product page in both priced and unpriced states, checkout permalink construction, bag behavior (add/quantity/remove/persistence), bag drawer, appointment form field progression, checkout stepper, newsletter modal, and shop grid. Form tests assert inline validation messages via accessible descriptions and that nothing is posted or advanced while invalid. Cart and checkout tests use a synthetic purchasable product from `tests/helpers/products.ts`.
 
 ## Reconnecting Shopify later
 

@@ -4,16 +4,40 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { buildCheckoutUrl, type CheckoutInfo } from '@/lib/checkout';
-import { EMAIL_RE, formatPrice } from '@/lib/format';
+import { formatPrice } from '@/lib/format';
+import { email, none, optionalPhone, required, type Validator } from '@/lib/validation';
+import FieldError from './FieldError';
 import { useCart } from './CartContext';
 import styles from './CheckoutFlow.module.css';
 
 const STEPS = ['BAG', 'INFORMATION', 'SHIPPING', 'PAYMENT'] as const;
 
+type FieldKey = Exclude<keyof CheckoutInfo, 'country'>;
+
+const VALIDATORS: Record<FieldKey, Validator> = {
+  email,
+  firstName: required('Enter your first name.'),
+  lastName: required('Enter your last name.'),
+  phone: optionalPhone,
+  address1: required('Enter your address.'),
+  address2: none,
+  city: required('Enter your city.'),
+  province: required('Enter your state.'),
+  zip: required('Enter your zip code.'),
+};
+
+const STEP_FIELDS: FieldKey[][] = [
+  [],
+  ['email', 'firstName', 'lastName', 'phone'],
+  ['address1', 'address2', 'city', 'province', 'zip'],
+];
+
 export default function CheckoutFlow() {
   const { lines, count, subtotal, remove, setQuantity } = useCart();
   const [step, setStep] = useState(0);
   const [info, setInfo] = useState<CheckoutInfo>({ country: 'United States' });
+  const [attempted, setAttempted] = useState(false);
+  const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
 
   if (lines.length === 0) {
     return (
@@ -26,14 +50,29 @@ export default function CheckoutFlow() {
     );
   }
 
-  const set = (key: keyof CheckoutInfo) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setInfo((prev) => ({ ...prev, [key]: e.target.value }));
+  const errorFor = (key: FieldKey) => VALIDATORS[key](info[key] ?? '');
+  const shownError = (key: FieldKey) => (attempted || touched[key] ? errorFor(key) : null);
+  const canContinue = (STEP_FIELDS[step] ?? []).every((key) => !errorFor(key));
 
-  const informationValid =
-    EMAIL_RE.test(info.email ?? '') && !!info.firstName?.trim() && !!info.lastName?.trim();
-  const shippingValid = !!info.address1?.trim() && !!info.city?.trim() && !!info.zip?.trim();
+  const field = (key: FieldKey, id: string) => ({
+    id,
+    value: info[key] ?? '',
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+      setInfo((prev) => ({ ...prev, [key]: e.target.value })),
+    onBlur: () => setTouched((prev) => ({ ...prev, [key]: true })),
+    'aria-invalid': shownError(key) ? true : undefined,
+    'aria-describedby': shownError(key) ? `${id}-error` : undefined,
+  });
 
-  const canContinue = [true, informationValid, shippingValid][step] ?? false;
+  const goTo = (next: number) => {
+    setStep(next);
+    setAttempted(false);
+  };
+
+  const tryContinue = () => {
+    setAttempted(true);
+    if (canContinue) goTo(step + 1);
+  };
 
   const continueLabel = step === 2 ? 'CONTINUE TO PAYMENT' : 'CONTINUE';
 
@@ -99,21 +138,25 @@ export default function CheckoutFlow() {
             <div className={styles.fields}>
               <div className={styles.field}>
                 <label htmlFor="co-email">EMAIL</label>
-                <input id="co-email" type="email" value={info.email ?? ''} onChange={set('email')} />
+                <input {...field('email', 'co-email')} type="email" />
+                <FieldError id="co-email-error" message={shownError('email')} />
               </div>
               <div className={styles.fieldRow}>
                 <div className={styles.field}>
                   <label htmlFor="co-first">FIRST NAME</label>
-                  <input id="co-first" value={info.firstName ?? ''} onChange={set('firstName')} />
+                  <input {...field('firstName', 'co-first')} />
+                <FieldError id="co-first-error" message={shownError('firstName')} />
                 </div>
                 <div className={styles.field}>
                   <label htmlFor="co-last">LAST NAME</label>
-                  <input id="co-last" value={info.lastName ?? ''} onChange={set('lastName')} />
+                  <input {...field('lastName', 'co-last')} />
+                <FieldError id="co-last-error" message={shownError('lastName')} />
                 </div>
               </div>
               <div className={styles.field}>
                 <label htmlFor="co-phone">PHONE (OPTIONAL)</label>
-                <input id="co-phone" type="tel" value={info.phone ?? ''} onChange={set('phone')} />
+                <input {...field('phone', 'co-phone')} type="tel" />
+                <FieldError id="co-phone-error" message={shownError('phone')} />
               </div>
             </div>
           </section>
@@ -124,24 +167,29 @@ export default function CheckoutFlow() {
             <div className={styles.fields}>
               <div className={styles.field}>
                 <label htmlFor="co-address">ADDRESS</label>
-                <input id="co-address" value={info.address1 ?? ''} onChange={set('address1')} />
+                <input {...field('address1', 'co-address')} />
+                <FieldError id="co-address-error" message={shownError('address1')} />
               </div>
               <div className={styles.field}>
                 <label htmlFor="co-address2">APT, SUITE (OPTIONAL)</label>
-                <input id="co-address2" value={info.address2 ?? ''} onChange={set('address2')} />
+                <input {...field('address2', 'co-address2')} />
+                <FieldError id="co-address2-error" message={shownError('address2')} />
               </div>
               <div className={styles.fieldRow}>
                 <div className={styles.field}>
                   <label htmlFor="co-city">CITY</label>
-                  <input id="co-city" value={info.city ?? ''} onChange={set('city')} />
+                  <input {...field('city', 'co-city')} />
+                <FieldError id="co-city-error" message={shownError('city')} />
                 </div>
                 <div className={styles.field}>
                   <label htmlFor="co-state">STATE</label>
-                  <input id="co-state" value={info.province ?? ''} onChange={set('province')} />
+                  <input {...field('province', 'co-state')} />
+                <FieldError id="co-state-error" message={shownError('province')} />
                 </div>
                 <div className={styles.field}>
                   <label htmlFor="co-zip">ZIP</label>
-                  <input id="co-zip" value={info.zip ?? ''} onChange={set('zip')} />
+                  <input {...field('zip', 'co-zip')} />
+                <FieldError id="co-zip-error" message={shownError('zip')} />
                 </div>
               </div>
             </div>
@@ -167,16 +215,12 @@ export default function CheckoutFlow() {
         )}
 
         {step < 3 && (
-          <button
-            className={styles.continue}
-            disabled={!canContinue}
-            onClick={() => canContinue && setStep((s) => s + 1)}
-          >
+          <button className={styles.continue} onClick={tryContinue}>
             {continueLabel}
           </button>
         )}
         {step > 0 && (
-          <button className={styles.back} onClick={() => setStep((s) => s - 1)}>
+          <button className={styles.back} onClick={() => goTo(step - 1)}>
             BACK
           </button>
         )}

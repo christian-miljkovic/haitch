@@ -64,4 +64,16 @@ describe('newsletter modal', () => {
     await user.click(screen.getByRole('button', { name: /close/i }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  test('shows a message under each empty or invalid field when subscribing', async () => {
+    const { user, dialog } = await openNewsletter();
+    await user.type(within(dialog).getByLabelText(/email/i), 'not-an-email');
+    await user.click(within(dialog).getByRole('button', { name: /subscribe/i }));
+    expect(within(dialog).getByLabelText(/full name/i)).toHaveAccessibleDescription(/enter your full name/i);
+    expect(within(dialog).getByLabelText(/email/i)).toHaveAccessibleDescription(/valid email/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    await user.type(within(dialog).getByLabelText(/full name/i), 'Harry Tillman');
+    expect(within(dialog).queryByText(/enter your full name/i)).not.toBeInTheDocument();
+  });
 });

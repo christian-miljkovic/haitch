@@ -109,4 +109,42 @@ describe('checkout flow', () => {
     expect(screen.getByText(/your bag is empty/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /shop/i })).toHaveAttribute('href', '/shop');
   });
+
+  test('shows a message under every required information field on an early continue', async () => {
+    const user = await renderCheckoutWithItem();
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+    await user.type(screen.getByLabelText(/email/i), 'nope');
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+
+    expect(step(/information/i)).toHaveAttribute('aria-current', 'step');
+    expect(screen.getByLabelText(/email/i)).toHaveAccessibleDescription(/valid email/i);
+    expect(screen.getByLabelText(/first name/i)).toHaveAccessibleDescription(/enter your first name/i);
+    expect(screen.getByLabelText(/last name/i)).toHaveAccessibleDescription(/enter your last name/i);
+    expect(screen.getByLabelText(/phone/i)).not.toHaveAttribute('aria-invalid', 'true');
+
+    await user.type(screen.getByLabelText(/phone/i), '12');
+    await user.tab();
+    expect(screen.getByLabelText(/phone/i)).toHaveAccessibleDescription(/valid phone/i);
+  });
+
+  test('requires address, city, state and zip before shipping can continue', async () => {
+    const user = await renderCheckoutWithItem();
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+    await user.type(screen.getByLabelText(/email/i), 'harry@example.com');
+    await user.type(screen.getByLabelText(/first name/i), 'Harry');
+    await user.type(screen.getByLabelText(/last name/i), 'Tillman');
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+
+    await user.click(screen.getByRole('button', { name: /continue/i }));
+    expect(step(/shipping/i)).toHaveAttribute('aria-current', 'step');
+    for (const [field, message] of [
+      [/address$/i, /enter your address/i],
+      [/city/i, /enter your city/i],
+      [/state/i, /enter your state/i],
+      [/zip/i, /enter your zip/i],
+    ] as [RegExp, RegExp][]) {
+      expect(screen.getByLabelText(field)).toHaveAccessibleDescription(message);
+    }
+    expect(screen.getByLabelText(/apt, suite/i)).not.toHaveAttribute('aria-invalid', 'true');
+  });
 });

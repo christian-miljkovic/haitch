@@ -3,18 +3,22 @@
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { EMAIL_RE } from '@/lib/format';
+import { email as validEmail, required } from '@/lib/validation';
+import FieldError from './FieldError';
 import { GALLERY_IMAGES } from '@/lib/gallery';
 import styles from './NewsletterModal.module.css';
 
 const FORMSPREE_ID = process.env.NEXT_PUBLIC_FORMSPREE_ID ?? 'placeholder';
-const MODAL_IMAGE = GALLERY_IMAGES[1];
+// First portrait frame of the lookbook.
+const MODAL_IMAGE = (GALLERY_IMAGES.find((g) => g.height > g.width) ?? GALLERY_IMAGES[0]).src;
 
 export default function NewsletterModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [touched, setTouched] = useState({ name: false, email: false });
+  const [submitted, setSubmitted] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -31,11 +35,15 @@ export default function NewsletterModal() {
     };
   }, [isOpen]);
 
-  const valid = name.trim().length > 1 && EMAIL_RE.test(email.trim());
+  const nameError = required('Enter your full name.')(name);
+  const emailError = validEmail(email);
+  const shownNameError = submitted || touched.name ? nameError : null;
+  const shownEmailError = submitted || touched.email ? emailError : null;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!valid || status === 'sending') return;
+    setSubmitted(true);
+    if (nameError || emailError || status === 'sending') return;
     setStatus('sending');
     try {
       const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
@@ -91,15 +99,18 @@ export default function NewsletterModal() {
                     <p className={styles.intro}>
                       New collections, launches and atelier news. Nothing more.
                     </p>
-                    <form className={styles.form} onSubmit={submit}>
+                    <form className={styles.form} onSubmit={submit} noValidate>
                       <div className={styles.field}>
                         <label htmlFor="newsletter-name">FULL NAME</label>
                         <input
                           id="newsletter-name"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          autoFocus
+                          onBlur={() => setTouched((t) => ({ ...t, name: true }))}
+                          aria-invalid={shownNameError ? true : undefined}
+                          aria-describedby={shownNameError ? 'newsletter-name-error' : undefined}
                         />
+                        <FieldError id="newsletter-name-error" message={shownNameError} />
                       </div>
                       <div className={styles.field}>
                         <label htmlFor="newsletter-email">EMAIL</label>
@@ -108,13 +119,13 @@ export default function NewsletterModal() {
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
+                          onBlur={() => setTouched((t) => ({ ...t, email: true }))}
+                          aria-invalid={shownEmailError ? true : undefined}
+                          aria-describedby={shownEmailError ? 'newsletter-email-error' : undefined}
                         />
+                        <FieldError id="newsletter-email-error" message={shownEmailError} />
                       </div>
-                      <button
-                        type="submit"
-                        className={styles.submit}
-                        disabled={!valid || status === 'sending'}
-                      >
+                      <button type="submit" className={styles.submit} disabled={status === 'sending'}>
                         {status === 'sending' ? 'SENDING…' : 'SUBSCRIBE'}
                       </button>
                       {status === 'error' && (

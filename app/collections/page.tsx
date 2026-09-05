@@ -8,16 +8,16 @@ export const metadata: Metadata = { title: 'Collections' };
 export default function CollectionsPage() {
   return (
     <div className={styles.gallery}>
-      {GALLERY_IMAGES.map((src, i) => (
-        <div key={src} className={styles.item}>
+      {GALLERY_IMAGES.map((image, i) => (
+        <div key={image.src} className={styles.item}>
           <Image
-            src={src}
-            alt={`HAITCH collection image ${i + 1}`}
-            width={800}
-            height={1000}
+            src={image.src}
+            alt={`HAITCH lookbook image ${i + 1}`}
+            width={image.width}
+            height={image.height}
             sizes="(max-width: 767px) 100vw, 33vw"
             className={styles.image}
-            priority={i < 3}
+            loading={i < 3 ? 'eager' : undefined}
           />
         </div>
       ))}
