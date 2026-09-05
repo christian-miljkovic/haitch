@@ -27,6 +27,11 @@
 @media (max-width: 767px) {
   .gallery {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .item {
+    width: 100%;
   }
 
   /* Collapse the columns so items re-sort into shoot order via `order`. */
