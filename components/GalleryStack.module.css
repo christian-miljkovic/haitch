@@ -17,10 +17,12 @@
   transform: none;
 }
 
-.stack {
+.tile {
+  display: block;
+  width: 100%;
+  height: 100%;
   padding: 0;
   cursor: pointer;
-  text-align: left;
 }
 
 .frame {
@@ -66,21 +68,44 @@
   }
 }
 
-.counter {
+.counter,
+.expand {
   position: absolute;
-  left: 16px;
   bottom: 14px;
+  color: var(--bg);
+  mix-blend-mode: difference;
+}
+
+.counter {
+  left: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 10px;
   letter-spacing: var(--tracking);
-  color: var(--bg);
-  mix-blend-mode: difference;
+  pointer-events: none;
 }
 
 .counterDivider {
   width: 14px;
   height: 1px;
   background: currentColor;
+}
+
+/* Hairline square, the full-screen affordance. */
+.expand {
+  right: 8px;
+  bottom: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.expandIcon {
+  width: 12px;
+  height: 12px;
+  border: 1px solid currentColor;
 }

@@ -32,7 +32,7 @@ This repo is the entire project. Its external touchpoints are:
 | Layer | Location | Role |
 |---|---|---|
 | Routes | @/app | Pages, layouts, metadata |
-| UI | @/components | Client/server components incl. cart state (`CartContext`) and the tap-to-cycle gallery tile (`GalleryStack`) |
+| UI | @/components | Client/server components incl. cart state (`CartContext`) and the collections gallery: `GalleryGrid` (balanced columns + viewer state), `GalleryStack` (tap-to-cycle / tap-to-expand tile), `GalleryViewer` (full-screen dialog) |
 | Data & utilities | @/lib | Static catalog + `Product` types, checkout URLs, price format, hero URLs + lookbook gallery manifest and its stacked form (`GALLERY_STACKS`), column balancing, hero image loader, form field validators |
 | Asset pipeline | @/scripts | `import-looks.mjs` (product looks → @/public/looks + @/lib/looks.json) and `import-lookbook.mjs` (LOOKBOOK shoot → @/public/lookbook + @/lib/lookbook.json) |
 | Tests | @/tests | Vitest + React Testing Library, configured by @/vitest.config.ts and @/vitest.setup.ts |

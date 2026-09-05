@@ -9,16 +9,20 @@ type Props = {
   images: GalleryImage[];
   // Position of this tile in the gallery, for alt text, image priority and the reveal cascade.
   position: number;
+  // Called with the frame to show when the tile is opened full screen.
+  onOpen: (frame: number) => void;
 };
 
-// One gallery tile. It rises into view as it scrolls onto the screen; a tile
-// holding several similar frames cycles through them on tap with a crossfade,
-// while a single frame is a plain image.
-export default function GalleryStack({ images, position }: Props) {
+// One gallery tile. It rises into view as it scrolls onto the screen. A lone
+// frame opens full screen on click; a tile holding several similar frames
+// cycles through them on click with a crossfade and offers a separate control
+// to open the current frame full screen.
+export default function GalleryStack({ images, position, onOpen }: Props) {
   const [current, setCurrent] = useState(0);
   const [revealed, setRevealed] = useState(false);
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const eager = position < 3;
+  const stacked = images.length > 1;
 
   useEffect(() => {
     const el = ref.current;
@@ -39,46 +43,56 @@ export default function GalleryStack({ images, position }: Props) {
     return () => observer.disconnect();
   }, []);
 
-  const frames = images.map((image, i) => (
-    <Image
-      key={image.src}
-      src={image.src}
-      alt={`HAITCH lookbook image ${position + 1}${images.length > 1 ? `, frame ${i + 1}` : ''}`}
-      width={image.width}
-      height={image.height}
-      sizes="(max-width: 767px) 100vw, 33vw"
-      className={`${styles.frame} ${i === current ? styles.current : ''}`}
-      loading={eager && i === 0 ? 'eager' : undefined}
-      aria-hidden={i !== current ? true : undefined}
-    />
-  ));
-
-  const className = `${styles.root} ${revealed ? styles.revealed : ''}`;
-  const style = { transitionDelay: `${(position % 3) * 90}ms` };
-
-  if (images.length === 1) {
-    return (
-      <div ref={ref as React.RefObject<HTMLDivElement>} className={className} style={style}>
-        {frames}
-      </div>
-    );
-  }
+  const label = `Lookbook image ${position + 1}`;
 
   return (
-    <button
-      ref={ref as React.RefObject<HTMLButtonElement>}
-      type="button"
-      className={`${className} ${styles.stack}`}
-      style={style}
-      onClick={() => setCurrent((c) => (c + 1) % images.length)}
-      aria-label={`Lookbook image ${position + 1}, frame ${current + 1} of ${images.length}. Show next frame`}
+    <div
+      ref={ref}
+      className={`${styles.root} ${revealed ? styles.revealed : ''}`}
+      style={{ transitionDelay: `${(position % 3) * 90}ms` }}
     >
-      {frames}
-      <span className={styles.counter} aria-hidden="true">
-        {current + 1}
-        <span className={styles.counterDivider} />
-        {images.length}
-      </span>
-    </button>
+      <button
+        type="button"
+        className={styles.tile}
+        onClick={() => (stacked ? setCurrent((c) => (c + 1) % images.length) : onOpen(0))}
+        aria-label={
+          stacked
+            ? `${label}, frame ${current + 1} of ${images.length}. Show next frame`
+            : `${label}. View full screen`
+        }
+      >
+        {images.map((image, i) => (
+          <Image
+            key={image.src}
+            src={image.src}
+            alt={`HAITCH lookbook image ${position + 1}${stacked ? `, frame ${i + 1}` : ''}`}
+            width={image.width}
+            height={image.height}
+            sizes="(max-width: 767px) 100vw, 33vw"
+            className={`${styles.frame} ${i === current ? styles.current : ''}`}
+            loading={eager && i === 0 ? 'eager' : undefined}
+            aria-hidden={i !== current ? true : undefined}
+          />
+        ))}
+      </button>
+
+      {stacked && (
+        <>
+          <span className={styles.counter} aria-hidden="true">
+            {current + 1}
+            <span className={styles.counterDivider} />
+            {images.length}
+          </span>
+          <button
+            type="button"
+            className={styles.expand}
+            onClick={() => onOpen(current)}
+            aria-label={`View lookbook image ${position + 1} full screen`}
+          >
+            <span className={styles.expandIcon} aria-hidden="true" />
+          </button>
+        </>
+      )}
+    </div>
   );
 }
