@@ -2,8 +2,11 @@
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: var(--bg);
-  animation: viewerIn 0.35s var(--ease);
+  /* A soft veil over the gallery rather than an opaque panel. */
+  background: rgba(250, 250, 248, 0.88);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  animation: viewerIn 0.6s var(--ease);
 }
 
 .stage {
@@ -22,6 +25,25 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  animation: imageIn 0.7s var(--ease);
+}
+
+@keyframes imageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .image {
+    animation: none;
+  }
 }
 
 .close {
