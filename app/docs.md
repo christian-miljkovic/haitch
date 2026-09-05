@@ -17,7 +17,7 @@ Next.js App Router routes for the storefront: the hero landing page, shop grid, 
 | `/` | Static | Full-bleed hero `<picture>` (`HERO_IMAGE` / `HERO_IMAGE_MOBILE`) built with `getImageProps` and the explicit `shopifyImageLoader`; SHOP THE COLLECTION link |
 | `/shop` | Static | Renders `ProductGrid` over `getProducts()` in line-sheet order (jackets, trousers, shirts) (4-across, hover image swap) |
 | `/products/[handle]` | SSG via sync `generateStaticParams` | `notFound()` on unknown handle; `ProductGallery` scroll column + sticky purchase panel |
-| `/collections` | Static | CSS-columns masonry over `GALLERY_IMAGES` (`/lookbook/<frame>.jpg`); each `next/image` receives the frame's real `width`/`height` from the manifest, and the first three use `loading="eager"` |
+| `/collections` | Static | Three balanced columns over `GALLERY_IMAGES` (`/lookbook/<frame>.jpg`) computed by `balanceColumns` in @/lib/gallery-layout.ts; each `next/image` receives the frame's real `width`/`height` from the manifest, and the first three use `loading="eager"` |
 | `/appointment` | Static shell | Renders client `AppointmentForm` (Formspree) |
 | `/about`, `/contact` | Static | Brand copy / contact info |
 | `/checkout` | Static shell | Renders client `CheckoutFlow`; all state is client-side |
@@ -32,6 +32,6 @@ Metadata uses the root template `%s — HAITCH`; each page exports its own `titl
 - `/checkout` and `/appointment` pages are server components that only host client components — no data fetching happens on these routes.
 - The old "MADE TO ORDER" note derived from a description regex is gone; the new line-sheet descriptions already end with "Made to order. 5-6 week production time."
 - Local look images (`/looks/look-N/NN.jpg`) and lookbook frames (`/lookbook/NNNN.jpg`) use Next's default image optimizer. Only the landing hero passes a `loader` (@/lib/shopify-image.ts) and is the only route image still relying on the `remotePatterns` allowlist in @/next.config.ts. `sizes` props are tuned per layout (e.g. `25vw` grid tiles, `55vw` gallery slides, `33vw` collections columns).
-- `/collections` passes per-image intrinsic dimensions rather than a fixed size because the lookbook mixes portrait and landscape frames; with real aspect ratios the CSS-columns masonry lays out at its final height before the images load. Re-running `npm run import:lookbook` regenerates the frames and the manifest the page maps over.
+- `/collections` places each frame in the currently shortest of three columns, then shrinks every image in a taller column by that column's factor (under 1% for the committed shoot, taken as an `object-fit: cover` crop via CSS custom properties) so all three columns end on the same line with no ragged bottom. Real aspect ratios from the manifest make this computable at build time and let the page lay out at its final height before images load. On phones the columns collapse with `display: contents` and items re-sort into shoot order through the CSS `order` property. Re-running `npm run import:lookbook` regenerates the frames and the manifest the page maps over.
 
 Created and maintained by Nori.

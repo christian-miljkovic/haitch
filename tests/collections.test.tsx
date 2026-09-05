@@ -17,14 +17,18 @@ describe('collections gallery', () => {
     }
   });
 
-  test('renders one image per lookbook shot at its true aspect ratio', () => {
+  test('renders every lookbook shot once with its true dimensions', () => {
     render(<CollectionsPage />);
     const imgs = screen.getAllByRole('img');
     expect(imgs).toHaveLength(GALLERY_IMAGES.length);
-    GALLERY_IMAGES.forEach((g, i) => {
-      expect(decodeURIComponent(imgs[i].getAttribute('src') ?? '')).toContain(g.src);
-      expect(imgs[i]).toHaveAttribute('width', String(g.width));
-      expect(imgs[i]).toHaveAttribute('height', String(g.height));
-    });
+    const bySrc = new Map(
+      imgs.map((img) => [decodeURIComponent(img.getAttribute('src') ?? ''), img] as const)
+    );
+    for (const g of GALLERY_IMAGES) {
+      const img = [...bySrc.entries()].find(([src]) => src.includes(g.src))?.[1];
+      expect(img, `${g.src} not rendered`).toBeDefined();
+      expect(img).toHaveAttribute('width', String(g.width));
+      expect(img).toHaveAttribute('height', String(g.height));
+    }
   });
 });

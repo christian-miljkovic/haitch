@@ -1,20 +1,40 @@
 .gallery {
-  columns: 3;
-  column-gap: 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.column {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .item {
-  break-inside: avoid;
   background: #f1f1ee;
 }
 
+/* Each column is shrunk by its own factor so all three end on the same line;
+   the sub-1% crop is taken evenly from every image via object-fit. */
 .image {
+  display: block;
   width: 100%;
   height: auto;
+  aspect-ratio: calc(var(--ratio) / var(--scale));
+  object-fit: cover;
 }
 
 @media (max-width: 767px) {
   .gallery {
-    columns: 1;
+    flex-direction: column;
+  }
+
+  /* Collapse the columns so items re-sort into shoot order via `order`. */
+  .column {
+    display: contents;
+  }
+
+  .image {
+    aspect-ratio: auto;
   }
 }
