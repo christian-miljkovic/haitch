@@ -11,6 +11,7 @@ type Look = {
   look: number;
   handle: string;
   title: string;
+  price: number;
   sizes: string;
   description: string;
   details: ProductDetailGroup[];
@@ -24,6 +25,7 @@ const LOOKS: Look[] = [
   {
     look: 11,
     handle: 'tuxedo-jacket-in-black-barathea',
+    price: 1800,
     title: 'TUXEDO JACKET IN BLACK BARATHEA',
     sizes: TAILORED_SIZES,
     description: `Single-breasted tailored tuxedo jacket made with British worsted barathea, featuring a satin peak lapel. ${MADE_TO_ORDER}`,
@@ -44,6 +46,7 @@ const LOOKS: Look[] = [
   {
     look: 8,
     handle: 'black-plain-weave-jacket',
+    price: 1500,
     title: 'BLACK PLAIN WEAVE JACKET',
     sizes: TAILORED_SIZES,
     description: `Single-breasted tailored jacket made with British worsted wool, featuring a peak lapel. ${MADE_TO_ORDER}`,
@@ -64,6 +67,7 @@ const LOOKS: Look[] = [
   {
     look: 7,
     handle: 'dark-navy-jacket-with-grey-pinstripe',
+    price: 1500,
     title: 'DARK NAVY JACKET WITH GREY PINSTRIPE',
     sizes: TAILORED_SIZES,
     description: `Single-breasted tailored jacket made with British worsted wool, featuring a peak lapel. ${MADE_TO_ORDER}`,
@@ -84,6 +88,7 @@ const LOOKS: Look[] = [
   {
     look: 6,
     handle: 'double-breasted-jacket-in-petrol-blue-gabardine',
+    price: 1650,
     title: 'DOUBLE-BREASTED JACKET IN PETROL BLUE GABARDINE',
     sizes: TAILORED_SIZES,
     description: `Double-breasted tailored jacket made with a petrol blue British gabardine. ${MADE_TO_ORDER}`,
@@ -104,6 +109,7 @@ const LOOKS: Look[] = [
   {
     look: 3,
     handle: 'tuxedo-trousers-in-black-barathea',
+    price: 900,
     title: 'TUXEDO TROUSERS IN BLACK BARATHEA',
     sizes: TAILORED_SIZES,
     description: `Plain front tailored tuxedo trousers made with British worsted barathea. ${MADE_TO_ORDER}`,
@@ -115,6 +121,7 @@ const LOOKS: Look[] = [
   {
     look: 10,
     handle: 'black-plain-weave-trousers',
+    price: 800,
     title: 'BLACK PLAIN WEAVE TROUSERS',
     sizes: TAILORED_SIZES,
     description: `Single-pleat tailored trousers made with British worsted wool. ${MADE_TO_ORDER}`,
@@ -126,6 +133,7 @@ const LOOKS: Look[] = [
   {
     look: 9,
     handle: 'grey-marle-pinstripe-trousers',
+    price: 800,
     title: 'GREY MARLE PINSTRIPE TROUSERS',
     sizes: TAILORED_SIZES,
     description: `Single-pleat tailored trousers made with British worsted wool. ${MADE_TO_ORDER}`,
@@ -137,6 +145,7 @@ const LOOKS: Look[] = [
   {
     look: 12,
     handle: 'stone-grey-gabardine-trousers',
+    price: 875,
     title: 'STONE GREY GABARDINE TROUSERS',
     sizes: TAILORED_SIZES,
     description: `Single-pleat tailored trousers made with stone grey British gabardine. ${MADE_TO_ORDER}`,
@@ -148,6 +157,7 @@ const LOOKS: Look[] = [
   {
     look: 5,
     handle: 'light-grey-cotton-trousers',
+    price: 625,
     title: 'LIGHT GREY COTTON TROUSERS',
     sizes: TAILORED_SIZES,
     description: `Plain front tailored trousers made with pure British cotton. ${MADE_TO_ORDER}`,
@@ -159,6 +169,7 @@ const LOOKS: Look[] = [
   {
     look: 2,
     handle: 'contrast-collar-shirt-in-silver-sateen',
+    price: 450,
     title: 'CONTRAST COLLAR SHIRT IN SILVER SATEEN',
     sizes: SHIRT_SIZES,
     description: `Silver sateen cotton shirt, featuring a pointed contrast collar in white and covered placket. ${MADE_TO_ORDER}`,
@@ -173,6 +184,7 @@ const LOOKS: Look[] = [
   {
     look: 1,
     handle: 'contrast-collar-shirt-in-blue-stripe',
+    price: 450,
     title: 'CONTRAST COLLAR SHIRT IN BLUE STRIPE',
     sizes: SHIRT_SIZES,
     description: `Blue striped cotton shirt, featuring a pointed contrast collar in white. ${MADE_TO_ORDER}`,
@@ -184,6 +196,7 @@ const LOOKS: Look[] = [
   {
     look: 4,
     handle: 'shirt-in-pink-stripe',
+    price: 450,
     title: 'SHIRT IN PINK STRIPE',
     sizes: SHIRT_SIZES,
     description: `White cotton shirt with pink stripe, featuring a pointed collar and three-button cuff. ${MADE_TO_ORDER}`,
@@ -199,6 +212,7 @@ const PRODUCTS: Product[] = LOOKS.map((entry) => ({
   handle: entry.handle,
   title: entry.title,
   description: entry.description,
+  price: entry.price,
   images: looks.looks.find((l) => l.look === entry.look)?.images ?? [],
   sizes: entry.sizes,
   details: entry.details,

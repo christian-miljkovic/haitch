@@ -2,13 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // Editorial hero, collections gallery and newsletter imagery still live
-    // on the label's Shopify CDN; persisted bag lines may reference the
+    // Bag lines persisted before the catalog switch may still reference
     // legacy cdn.shopify.com product photos.
-    remotePatterns: [
-      { protocol: "https", hostname: "haitch-usa.com", pathname: "/cdn/shop/**" },
-      { protocol: "https", hostname: "cdn.shopify.com", pathname: "/s/files/**" },
-    ],
+    remotePatterns: [{ protocol: "https", hostname: "cdn.shopify.com", pathname: "/s/files/**" }],
+    // 90 is reserved for the landing hero; everything else uses the default 75.
+    qualities: [75, 90],
   },
 };
 

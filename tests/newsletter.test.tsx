@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Footer from '@/components/Footer';
+import { NEWSLETTER_IMAGE } from '@/lib/gallery';
 
 const fetchMock = vi.fn(() =>
   Promise.resolve(new Response(JSON.stringify({ ok: true }), { status: 200 }))
@@ -30,9 +31,10 @@ describe('newsletter modal', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  test('opens a centered modal with an image and full name + email fields', async () => {
+  test('opens a centered modal with the newsletter photo and full name + email fields', async () => {
     const { dialog } = await openNewsletter();
-    expect(within(dialog).getByRole('img')).toBeInTheDocument();
+    const img = within(dialog).getByRole('img');
+    expect(decodeURIComponent(img.getAttribute('src') ?? '')).toContain(NEWSLETTER_IMAGE.src);
     expect(within(dialog).getByLabelText(/full name/i)).toBeInTheDocument();
     expect(within(dialog).getByLabelText(/email/i)).toBeInTheDocument();
   });

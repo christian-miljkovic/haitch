@@ -36,22 +36,8 @@
 }
 
 @media (max-width: 767px) {
-  /* Portrait banner at natural ratio (no cropping); the section still fills
-     the viewport so the footer stays below the fold. The CTA anchors to the
-     photo itself, matching desktop. */
-  .hero {
-    min-height: 0;
-  }
-
-  .frame {
-    height: auto;
-  }
-
-  .heroImage {
-    position: static;
-    height: auto;
-  }
-
+  /* The portrait photo fills the viewport like desktop, anchored to the top so
+     the head stays in frame; the CTA stays anchored to the photo. */
   .cta {
     bottom: 24px;
   }

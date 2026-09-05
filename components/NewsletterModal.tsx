@@ -5,12 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { email as validEmail, required } from '@/lib/validation';
 import FieldError from './FieldError';
-import { GALLERY_IMAGES } from '@/lib/gallery';
+import { NEWSLETTER_IMAGE } from '@/lib/gallery';
 import styles from './NewsletterModal.module.css';
 
 const FORMSPREE_ID = process.env.NEXT_PUBLIC_FORMSPREE_ID ?? 'placeholder';
-// First portrait frame of the lookbook.
-const MODAL_IMAGE = (GALLERY_IMAGES.find((g) => g.height > g.width) ?? GALLERY_IMAGES[0]).src;
 
 export default function NewsletterModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,7 +77,7 @@ export default function NewsletterModal() {
 
               <div className={styles.imageFrame}>
                 <Image
-                  src={MODAL_IMAGE}
+                  src={NEWSLETTER_IMAGE.src}
                   alt="HAITCH editorial"
                   fill
                   sizes="(max-width: 767px) 100vw, 400px"

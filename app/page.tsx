@@ -1,7 +1,6 @@
 import { getImageProps } from 'next/image';
 import Link from 'next/link';
 import { HERO_IMAGE, HERO_IMAGE_MOBILE } from '@/lib/gallery';
-import { shopifyImageLoader } from '@/lib/shopify-image';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -9,14 +8,14 @@ export default function Home() {
     alt: 'HAITCH tailoring, made in New York City',
     priority: true,
     sizes: '100vw',
-    loader: shopifyImageLoader,
+    quality: 90,
   };
   const {
     props: { srcSet: desktopSrcSet, ...imgProps },
-  } = getImageProps({ ...common, src: HERO_IMAGE, width: 3000, height: 1688 });
+  } = getImageProps({ ...common, ...HERO_IMAGE });
   const {
     props: { srcSet: mobileSrcSet },
-  } = getImageProps({ ...common, src: HERO_IMAGE_MOBILE, width: 1500, height: 1942 });
+  } = getImageProps({ ...common, ...HERO_IMAGE_MOBILE });
 
   return (
     <section className={styles.hero}>
