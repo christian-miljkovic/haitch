@@ -14,6 +14,15 @@ import sharp from 'sharp';
 const PHOTO = /\.(jpe?g|png)$/i;
 const FRAME = /(\d{4})/;
 
+// Stacking: consecutive frames that belong to the same set are grouped so the
+// gallery can show one tile per set. A new group starts when the camera frame
+// number jumps, the picture changes noticeably, the orientation flips, or the
+// group is already full.
+const GROUP_MAX_SIZE = 6;
+const GROUP_FRAME_GAP = 10;
+const GROUP_MAX_DISTANCE = 0.2;
+const SIGNATURE_SIZE = 24;
+
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     if (entry.name.startsWith('.')) return [];
@@ -53,17 +62,48 @@ export async function importLookbook({
   const images = [];
   for (const [frame, file] of frames) {
     const name = `${frame}.jpg`;
+    const out = path.join(outDir, name);
     const { width, height } = await sharp(file, { limitInputPixels: false })
       .rotate()
       .resize({ width: maxWidth, height: maxHeight, fit: 'inside', withoutEnlargement: true })
       .jpeg({ quality, mozjpeg: true })
-      .toFile(path.join(outDir, name));
-    images.push({ src: `/lookbook/${name}`, width, height });
+      .toFile(out);
+    const signature = await sharp(out)
+      .resize(SIGNATURE_SIZE, SIGNATURE_SIZE, { fit: 'fill' })
+      .greyscale()
+      .raw()
+      .toBuffer();
+    images.push({ src: `/lookbook/${name}`, width, height, frame: Number(frame), signature });
   }
 
+  let group = 0;
+  let groupSize = 0;
+  const manifest = images.map((image, i) => {
+    const prev = images[i - 1];
+    const startsNewGroup =
+      !prev ||
+      image.frame - prev.frame >= GROUP_FRAME_GAP ||
+      distance(image.signature, prev.signature) > GROUP_MAX_DISTANCE ||
+      image.width > image.height !== prev.width > prev.height ||
+      groupSize >= GROUP_MAX_SIZE;
+    if (startsNewGroup) {
+      group += 1;
+      groupSize = 0;
+    }
+    groupSize += 1;
+    return { src: image.src, width: image.width, height: image.height, group };
+  });
+
   fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
-  fs.writeFileSync(manifestPath, `${JSON.stringify({ images }, null, 2)}\n`);
-  return images;
+  fs.writeFileSync(manifestPath, `${JSON.stringify({ images: manifest }, null, 2)}\n`);
+  return manifest;
+}
+
+// Mean absolute difference between two greyscale signatures, 0 (identical) to 1.
+function distance(a, b) {
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) sum += Math.abs(a[i] - b[i]);
+  return sum / a.length / 255;
 }
 
 const invokedDirectly = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);

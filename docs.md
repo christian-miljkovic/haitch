@@ -24,7 +24,7 @@ This repo is the entire project. Its external touchpoints are:
 - Catalog data is hand-transcribed from the brand's "Website 2.0 Outline" line sheet into @/lib/catalog.ts, one entry per photographed "Look". Images are local files under @/public/looks, listed in the generated manifest @/lib/looks.json. Nothing about the catalog is fetched at build or request time, so `/shop` and `/products/[handle]` are fully static.
 - Payment happens on Shopify's hosted checkout; @/lib/checkout.ts builds cart permalink URLs (`STORE_URL` from @/lib/shopify.ts) that prefill contact/shipping fields. A fully custom payment page is impossible under Shopify policy, so the custom @/app/checkout page collects Bag → Information → Shipping and then hands off.
 - Images split by origin: local look photos (@/public/looks) and the lookbook gallery / newsletter image (@/public/lookbook) go through Next's built-in image optimizer; only the landing hero still lives on the Shopify CDN, allowlisted via `images.remotePatterns` in @/next.config.ts and loaded through the explicit per-instance loader (@/lib/shopify-image.ts).
-- Two offline asset pipelines in @/scripts commit web-sized JPEGs plus a JSON manifest that the app reads at build time: `import-looks.mjs` (`npm run import:looks -- <sourceDir>`) turns the `Look N/` product folders into @/public/looks + @/lib/looks.json, and `import-lookbook.mjs` (`npm run import:lookbook -- <folder>`) turns the LOOKBOOK shoot into @/public/lookbook + @/lib/lookbook.json (one image per unique frame number, with recorded width/height).
+- Two offline asset pipelines in @/scripts commit web-sized JPEGs plus a JSON manifest that the app reads at build time: `import-looks.mjs` (`npm run import:looks -- <sourceDir>`) turns the `Look N/` product folders into @/public/looks + @/lib/looks.json, and `import-lookbook.mjs` (`npm run import:lookbook -- <folder>`) turns the LOOKBOOK shoot into @/public/lookbook + @/lib/lookbook.json (one image per unique frame number, with recorded width/height and a `group` id marking runs of near-identical frames, which `/collections` shows as single tap-to-cycle tiles).
 - Every form (appointment, newsletter, checkout information/shipping) validates inline with the shared validators in @/lib/validation.ts and the @/components/FieldError.tsx message component, so field-level error copy and accessibility wiring are uniform across surfaces.
 
 ### Core Implementation
@@ -32,8 +32,8 @@ This repo is the entire project. Its external touchpoints are:
 | Layer | Location | Role |
 |---|---|---|
 | Routes | @/app | Pages, layouts, metadata |
-| UI | @/components | Client/server components incl. cart state (`CartContext`) |
-| Data & utilities | @/lib | Static catalog + `Product` types, checkout URLs, price format, hero URLs + lookbook gallery manifest, hero image loader, form field validators |
+| UI | @/components | Client/server components incl. cart state (`CartContext`) and the tap-to-cycle gallery tile (`GalleryStack`) |
+| Data & utilities | @/lib | Static catalog + `Product` types, checkout URLs, price format, hero URLs + lookbook gallery manifest and its stacked form (`GALLERY_STACKS`), column balancing, hero image loader, form field validators |
 | Asset pipeline | @/scripts | `import-looks.mjs` (product looks → @/public/looks + @/lib/looks.json) and `import-lookbook.mjs` (LOOKBOOK shoot → @/public/lookbook + @/lib/lookbook.json) |
 | Tests | @/tests | Vitest + React Testing Library, configured by @/vitest.config.ts and @/vitest.setup.ts |
 
@@ -51,5 +51,6 @@ Design references per surface: The Row (nav), Rick Owens (shop grid, checkout st
 - Reconnecting to Shopify later requires creating the twelve products in the store and then either mapping by handle (catalog handles are fixed slug-style handles, chosen to match how Shopify generates handles) or supplying variant IDs into each entry's `variants`. The old `products.json` fetch/normalize code and its fixture were deleted but are recoverable from git history.
 - `cdn.shopify.com` stays in `remotePatterns` because bag lines persisted in visitors' `localStorage` may still reference legacy Shopify product images. The collections gallery no longer touches the Shopify CDN at all.
 - Generated manifests (@/lib/looks.json, @/lib/lookbook.json) and their image folders must be committed together: tests assert every manifest path exists on disk.
+- Which lookbook frames collapse into one `/collections` tile is decided offline, not in the app: @/scripts/import-lookbook.mjs assigns the `group` ids in @/lib/lookbook.json from frame-number gaps, a greyscale pixel-distance threshold, orientation flips, and a maximum run length. Re-running the importer recomputes the stacks along with the images; the app only folds *consecutive* equal `group` values (`stackImages` in @/lib/gallery-layout.ts).
 
 Created and maintained by Nori.
