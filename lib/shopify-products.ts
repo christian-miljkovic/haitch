@@ -39,3 +39,18 @@ export function matchToCatalog(
   }
   return { matched, unmatched };
 }
+
+// Orders store variants by the line-sheet size run ("44, 46, 48 EU" or
+// "XS, S, M, L, XL, XXL"); sizes the run does not mention keep store order at the end.
+export function orderVariants(variants: ProductVariant[], sizes: string): ProductVariant[] {
+  const run = sizes
+    .replace(/\b(EU|US|UK)\b/gi, '')
+    .split(',')
+    .map((s) => s.trim().toUpperCase())
+    .filter(Boolean);
+  const rank = (size: string) => {
+    const i = run.indexOf(size.trim().toUpperCase());
+    return i === -1 ? run.length : i;
+  };
+  return [...variants].sort((a, b) => rank(a.size) - rank(b.size));
+}

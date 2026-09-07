@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Reads every product in the Shopify store through the Admin API (client
-// credentials grant, so nothing needs installing in the admin) and writes
-// lib/shopify-products.json. The catalog joins those store products to the
-// twelve looks by handle or title to get purchasable variants.
+// Reads the Shopify store through the Admin API (client credentials grant, so
+// nothing needs installing in the admin) and writes lib/shopify-products.json
+// with the products that belong to the catalog. The catalog joins them to the
+// twelve looks by handle or title to get purchasable variants. Store products
+// outside the catalog are dropped so internal pricing never lands in the repo.
 //
 //   npm run sync:shopify
 //
@@ -33,6 +34,24 @@ export const PRODUCTS_QUERY = `
 `;
 
 const numericId = (gid) => Number(gid.split('/').pop());
+
+// The handles and titles declared in lib/catalog.ts, read from source so this
+// script needs no TypeScript toolchain.
+export function catalogEntries(source) {
+  const entries = [];
+  const re = /handle:\s*'([^']+)',\s*(?:price:\s*\d+,\s*)?title:\s*'([^']+)'/g;
+  let m;
+  while ((m = re.exec(source))) entries.push({ handle: m[1], title: m[2] });
+  return entries;
+}
+
+const normalize = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+export function keepCatalogProducts(products, entries) {
+  const handles = new Set(entries.map((e) => e.handle));
+  const titles = new Set(entries.map((e) => normalize(e.title)));
+  return products.filter((p) => handles.has(p.handle) || titles.has(normalize(p.title)));
+}
 
 export async function fetchAdminToken({ domain, clientId, clientSecret }, fetch = globalThis.fetch) {
   const res = await fetch(`https://${domain}/admin/oauth/access_token`, {
@@ -109,11 +128,15 @@ if (invokedDirectly) {
     process.exit(1);
   }
   const token = await fetchAdminToken(config);
-  const products = await fetchAllProducts(config, token);
+  const all = await fetchAllProducts(config, token);
+  const entries = catalogEntries(fs.readFileSync(path.join(root, 'lib', 'catalog.ts'), 'utf8'));
+  const products = keepCatalogProducts(all, entries);
   const out = path.join(root, 'lib', 'shopify-products.json');
   fs.writeFileSync(out, `${JSON.stringify({ syncedAt: new Date().toISOString(), products }, null, 2)}\n`);
   for (const p of products) {
     console.log(`${p.status.padEnd(8)} ${p.handle}  (${p.variants.length} variants)`);
   }
-  console.log(`${products.length} products written to lib/shopify-products.json`);
+  console.log(`${products.length} of ${all.length} store products belong to the catalog; written to lib/shopify-products.json`);
+  const unmatched = entries.filter((e) => !products.some((p) => p.handle === e.handle || normalize(p.title) === normalize(e.title)));
+  for (const e of unmatched) console.log(`no store product for ${e.handle}`);
 }

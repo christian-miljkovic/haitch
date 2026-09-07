@@ -1,4 +1,641 @@
 {
-  "syncedAt": null,
-  "products": []
+  "syncedAt": "2026-09-07T20:22:26.826Z",
+  "products": [
+    {
+      "id": 10863133589816,
+      "handle": "dark-navy-jacket-with-grey-pinstripe",
+      "title": "DARK NAVY JACKET WITH GREY PINSTRIPE",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52911797436728,
+          "size": "58",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911797469496,
+          "size": "56",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911797502264,
+          "size": "54",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911797535032,
+          "size": "52",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911797567800,
+          "size": "50",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911797600568,
+          "size": "48",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911797633336,
+          "size": "46",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911797666104,
+          "size": "44",
+          "price": 1500,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863136670008,
+      "handle": "tuxedo-jacket-in-black-barathea",
+      "title": "TUXEDO JACKET IN BLACK BARATHEA",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52911820767544,
+          "size": "58",
+          "price": 1800,
+          "available": true
+        },
+        {
+          "id": 52911820800312,
+          "size": "56",
+          "price": 1800,
+          "available": true
+        },
+        {
+          "id": 52911820833080,
+          "size": "54",
+          "price": 1800,
+          "available": true
+        },
+        {
+          "id": 52911820865848,
+          "size": "52",
+          "price": 1800,
+          "available": true
+        },
+        {
+          "id": 52911820898616,
+          "size": "50",
+          "price": 1800,
+          "available": true
+        },
+        {
+          "id": 52911820931384,
+          "size": "48",
+          "price": 1800,
+          "available": true
+        },
+        {
+          "id": 52911820964152,
+          "size": "46",
+          "price": 1800,
+          "available": true
+        },
+        {
+          "id": 52911820996920,
+          "size": "44",
+          "price": 1800,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863138603320,
+      "handle": "black-plain-weave-jacket",
+      "title": "BLACK PLAIN WEAVE JACKET",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52911830630712,
+          "size": "58",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911830663480,
+          "size": "56",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911830696248,
+          "size": "54",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911830729016,
+          "size": "52",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911830761784,
+          "size": "50",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911830794552,
+          "size": "48",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911830827320,
+          "size": "46",
+          "price": 1500,
+          "available": true
+        },
+        {
+          "id": 52911830860088,
+          "size": "44",
+          "price": 1500,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863142240568,
+      "handle": "double-breasted-jacket-in-petrol-blue-gabardine",
+      "title": "DOUBLE-BREASTED JACKET IN PETROL BLUE GABARDINE",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52911846261048,
+          "size": "58",
+          "price": 1650,
+          "available": true
+        },
+        {
+          "id": 52911846293816,
+          "size": "56",
+          "price": 1650,
+          "available": true
+        },
+        {
+          "id": 52911846326584,
+          "size": "54",
+          "price": 1650,
+          "available": true
+        },
+        {
+          "id": 52911846359352,
+          "size": "52",
+          "price": 1650,
+          "available": true
+        },
+        {
+          "id": 52911846392120,
+          "size": "50",
+          "price": 1650,
+          "available": true
+        },
+        {
+          "id": 52911846424888,
+          "size": "48",
+          "price": 1650,
+          "available": true
+        },
+        {
+          "id": 52911846457656,
+          "size": "46",
+          "price": 1650,
+          "available": true
+        },
+        {
+          "id": 52911846490424,
+          "size": "44",
+          "price": 1650,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863154823480,
+      "handle": "tuxedo-trousers-in-black-barathea",
+      "title": "TUXEDO TROUSERS IN BLACK BARATHEA",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52911884960056,
+          "size": "58",
+          "price": 900,
+          "available": true
+        },
+        {
+          "id": 52911884992824,
+          "size": "56",
+          "price": 900,
+          "available": true
+        },
+        {
+          "id": 52911885025592,
+          "size": "54",
+          "price": 900,
+          "available": true
+        },
+        {
+          "id": 52911885058360,
+          "size": "52",
+          "price": 900,
+          "available": true
+        },
+        {
+          "id": 52911885091128,
+          "size": "50",
+          "price": 900,
+          "available": true
+        },
+        {
+          "id": 52911885123896,
+          "size": "48",
+          "price": 900,
+          "available": true
+        },
+        {
+          "id": 52911885156664,
+          "size": "46",
+          "price": 900,
+          "available": true
+        },
+        {
+          "id": 52911885189432,
+          "size": "44",
+          "price": 900,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863198306616,
+      "handle": "black-plain-weave-trousers",
+      "title": "BLACK PLAIN WEAVE TROUSERS",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52912092610872,
+          "size": "58",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912092643640,
+          "size": "56",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912092676408,
+          "size": "54",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912092709176,
+          "size": "52",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912092741944,
+          "size": "50",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912092774712,
+          "size": "48",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912092807480,
+          "size": "46",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912092840248,
+          "size": "44",
+          "price": 800,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863448686904,
+      "handle": "grey-marle-pinstripe-trousers",
+      "title": "GREY MARLE PINSTRIPE TROUSERS",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52912762126648,
+          "size": "58",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912762159416,
+          "size": "56",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912762192184,
+          "size": "54",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912762224952,
+          "size": "52",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912762257720,
+          "size": "50",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912762290488,
+          "size": "48",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912762323256,
+          "size": "46",
+          "price": 800,
+          "available": true
+        },
+        {
+          "id": 52912762356024,
+          "size": "44",
+          "price": 800,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863451210040,
+      "handle": "stone-grey-gabardine-trousers",
+      "title": "STONE GREY GABARDINE TROUSERS",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52912765043000,
+          "size": "58",
+          "price": 875,
+          "available": true
+        },
+        {
+          "id": 52912765075768,
+          "size": "56",
+          "price": 875,
+          "available": true
+        },
+        {
+          "id": 52912765108536,
+          "size": "54",
+          "price": 875,
+          "available": true
+        },
+        {
+          "id": 52912765141304,
+          "size": "52",
+          "price": 875,
+          "available": true
+        },
+        {
+          "id": 52912765174072,
+          "size": "50",
+          "price": 875,
+          "available": true
+        },
+        {
+          "id": 52912765206840,
+          "size": "48",
+          "price": 875,
+          "available": true
+        },
+        {
+          "id": 52912765239608,
+          "size": "46",
+          "price": 875,
+          "available": true
+        },
+        {
+          "id": 52912765272376,
+          "size": "44",
+          "price": 875,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863452619064,
+      "handle": "light-grey-cotton-trousers",
+      "title": "LIGHT GREY COTTON TROUSERS",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52912767009080,
+          "size": "58",
+          "price": 625,
+          "available": true
+        },
+        {
+          "id": 52912767041848,
+          "size": "56",
+          "price": 625,
+          "available": true
+        },
+        {
+          "id": 52912767074616,
+          "size": "54",
+          "price": 625,
+          "available": true
+        },
+        {
+          "id": 52912767107384,
+          "size": "52",
+          "price": 625,
+          "available": true
+        },
+        {
+          "id": 52912767140152,
+          "size": "50",
+          "price": 625,
+          "available": true
+        },
+        {
+          "id": 52912767172920,
+          "size": "48",
+          "price": 625,
+          "available": true
+        },
+        {
+          "id": 52912767205688,
+          "size": "46",
+          "price": 625,
+          "available": true
+        },
+        {
+          "id": 52912767238456,
+          "size": "44",
+          "price": 625,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863457698104,
+      "handle": "contrast-collar-shirt-in-silver-sateen",
+      "title": "CONTRAST COLLAR SHIRT IN SILVER SATEEN",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52912773562680,
+          "size": "XXL",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912773595448,
+          "size": "L",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912773628216,
+          "size": "M",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912773660984,
+          "size": "S",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912773693752,
+          "size": "XL",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912773726520,
+          "size": "XS",
+          "price": 450,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863460024632,
+      "handle": "contrast-collar-shirt-in-blue-stripe",
+      "title": "CONTRAST COLLAR SHIRT IN BLUE STRIPE",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52912776216888,
+          "size": "XXL",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912776249656,
+          "size": "L",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912776282424,
+          "size": "M",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912776315192,
+          "size": "S",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912776347960,
+          "size": "XL",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912776380728,
+          "size": "XS",
+          "price": 450,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": 10863462809912,
+      "handle": "shirt-in-pink-stripe",
+      "title": "SHIRT IN PINK STRIPE",
+      "status": "DRAFT",
+      "variants": [
+        {
+          "id": 52912779952440,
+          "size": "XXL",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912779985208,
+          "size": "L",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912780017976,
+          "size": "M",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912780050744,
+          "size": "S",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912780083512,
+          "size": "XL",
+          "price": 450,
+          "available": true
+        },
+        {
+          "id": 52912780116280,
+          "size": "XS",
+          "price": 450,
+          "available": true
+        }
+      ]
+    }
+  ]
 }

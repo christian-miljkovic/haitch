@@ -1,7 +1,7 @@
 import looks from './looks.json';
 import store from './shopify-products.json';
 import type { Product, ProductDetailGroup } from './product';
-import { matchToCatalog } from './shopify-products';
+import { matchToCatalog, orderVariants } from './shopify-products';
 
 // Copy from the "Website 2.0 Outline" line sheet, keyed to the photo look
 // each garment was shot in and listed in the line sheet's order (jackets,
@@ -214,7 +214,7 @@ const LOOKS: Look[] = [
 const { matched: STORE } = matchToCatalog(store.products, LOOKS);
 
 const PRODUCTS: Product[] = LOOKS.map((entry) => {
-  const variants = STORE[entry.handle]?.variants ?? [];
+  const variants = orderVariants(STORE[entry.handle]?.variants ?? [], entry.sizes);
   return {
     id: entry.look,
     handle: entry.handle,
