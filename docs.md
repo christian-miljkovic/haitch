@@ -4,53 +4,63 @@ Path: @/
 
 ### Overview
 
-A redesigned storefront for HAITCH (haitch-usa.com), a NYC menswear label. Next.js App Router (v16) with TypeScript strict mode, CSS Modules, and npm; deployed to Vercel with zero config. There is no database and no Shopify API credentials. The product catalog is a static, in-repo line sheet (@/lib/catalog.ts) with studio photography committed under @/public/looks, the `/collections` gallery is the photographer's LOOKBOOK shoot committed under @/public/lookbook, and the landing hero photos are committed under @/public/home; the Shopify store is only used for hosted checkout.
+A redesigned storefront for HAITCH (haitch-usa.com), a NYC menswear label. Next.js App Router (v16) with TypeScript strict mode, CSS Modules, and npm; deployed to Vercel with zero config. There is no database. The product catalog is a static, in-repo line sheet (@/lib/catalog.ts) with studio photography committed under @/public/looks, the `/collections` gallery is the photographer's LOOKBOOK shoot committed under @/public/lookbook, and the landing hero photos are committed under @/public/home. Purchasable variants come from a committed snapshot of the merchant's Shopify products (@/lib/shopify-products.json, written by `npm run sync:shopify`), and payment happens on a Shopify-hosted page reached by creating a draft order through the Shopify Admin API from the site's single route handler, `/api/checkout`.
 
 ### How it fits into the larger codebase
 
 This repo is the entire project. Its external touchpoints are:
 
 ```
-   in-repo catalog + photography       ┌──────────────────────────────┐
-   lib/catalog.ts + public/looks       │  haitch-usa.com (Shopify)    │   hosted checkout
-   lib/lookbook.json + public/lookbook │  - /cart/{variant}:{qty}     │◀── cart permalink
-   public/home (hero)                  │                              │    handoff
-   (no runtime fetch)                  └──────────────────────────────┘
-                                       ┌──────────────────────────────┐
-   appointment / newsletter ──────────▶│  formspree.io                │
-   form POST                           └──────────────────────────────┘
+   in-repo catalog + photography              ┌────────────────────────────────────────────┐
+   lib/catalog.ts + public/looks              │  Shopify Admin API                         │
+   lib/lookbook.json + public/lookbook        │  https://{shop}.myshopify.com              │
+   public/home (hero)                         │  auth: client credentials grant → token    │
+   (no runtime fetch)                         │                                            │
+                                              │  products query                            │
+   scripts/sync-shopify.mjs ─────────────────▶│    ──▶ lib/shopify-products.json           │
+   (offline, npm run sync:shopify)            │        (committed; joined into the         │
+                                              │         catalog at build time)             │
+                                              │                                            │
+   app/api/checkout/route.ts ────────────────▶│  draftOrderCreate ──▶ invoiceUrl ──────────│──▶ browser navigates to
+   (runtime; the only dynamic route)          │  (Shopify-hosted payment page)             │    Shopify to pay
+                                              └────────────────────────────────────────────┘
+                                              ┌──────────────────────────────┐
+   appointment / newsletter ─────────────────▶│  formspree.io                │
+   form POST                                  └──────────────────────────────┘
 ```
 
-- Catalog data is hand-transcribed from the brand's "Website 2.0 Outline" line sheet into @/lib/catalog.ts, one entry per photographed "Look". Images are local files under @/public/looks, listed in the generated manifest @/lib/looks.json. Nothing about the catalog is fetched at build or request time, so `/shop` and `/products/[handle]` are fully static.
-- Payment happens on Shopify's hosted checkout; @/lib/checkout.ts builds cart permalink URLs (`STORE_URL` from @/lib/shopify.ts) that prefill contact/shipping fields. A fully custom payment page is impossible under Shopify policy, so the custom @/app/checkout page collects Bag → Information → Shipping and then hands off.
+- Catalog data is hand-transcribed from the brand's "Website 2.0 Outline" line sheet into @/lib/catalog.ts, one entry per photographed "Look". Images are local files under @/public/looks, listed in the generated manifest @/lib/looks.json. At module load the catalog joins @/lib/shopify-products.json to its looks with `matchToCatalog` (@/lib/shopify-products.ts) — by handle first, then by normalised title — to pick up each look's Shopify variant ids, sizes, prices, and availability. Nothing about the catalog is fetched at build or request time, so `/shop` and `/products/[handle]` are fully static; the store snapshot is a committed file like the image manifests.
+- The store's products are not published to the Online Store sales channel, so the public storefront endpoints and Shopify's `/cart/…` permalinks do not work for them. Payment therefore goes through the Admin API instead: the custom @/app/checkout page collects Bag → Information → Shipping and then POSTs the bag and contact details to @/app/api/checkout/route.ts, which calls `createDraftOrder` in @/lib/shopify-admin.ts (`draftOrderCreate` mutation) and returns the draft order's `invoiceUrl`; the browser is sent to that Shopify-hosted payment page. A fully custom payment page is impossible under Shopify policy, so this hand-off is where Shop Pay, wallets, and cards live.
+- Both Shopify callers authenticate the same way: a client-credentials token exchange (`POST /admin/oauth/access_token` with `grant_type=client_credentials`) using the merchant's Dev Dashboard app ("HAITCH website"). @/scripts/sync-shopify.mjs does it once per run; @/lib/shopify-admin.ts caches the short-lived token in module scope with its expiry. The client secret exists only in server-side env (Vercel env, mirrored into the gitignored `.env.local`) and is never bundled for the browser — @/lib/shopify-admin.ts is imported only from the route handler.
 - All editorial imagery is local and goes through Next's built-in image optimizer: look photos (@/public/looks), the lookbook gallery and newsletter picture (@/public/lookbook), and the landing hero (@/public/home). @/lib/gallery.ts exports each non-catalog picture as a `Photo = { src, width, height }` so pages can pass true intrinsic sizes to `next/image`. No route passes a custom `loader`; the only `remotePatterns` entry in @/next.config.ts (`cdn.shopify.com`) exists for legacy bag lines, not for anything the app renders today.
 - The two hero photos (desktop landscape frame 1345, mobile black-and-white portrait frame 1790, both picked from the brand's "Website 2.0 Outline" deck) were downscaled once with sharp from the LOOKBOOK originals and committed under @/public/home. There is no import script for them; if the frames change they are regenerated by hand and the `Photo` dimensions in @/lib/gallery.ts updated to match.
-- Two offline asset pipelines in @/scripts commit web-sized JPEGs plus a JSON manifest that the app reads at build time: `import-looks.mjs` (`npm run import:looks -- <sourceDir>`) turns the `Look N/` product folders into @/public/looks + @/lib/looks.json, and `import-lookbook.mjs` (`npm run import:lookbook -- <folder>`) turns the LOOKBOOK shoot into @/public/lookbook + @/lib/lookbook.json (one image per unique frame number, with recorded width/height and a `group` id marking runs of near-identical frames, which `/collections` shows as single tap-to-cycle tiles).
+- Three offline scripts in @/scripts commit files the app reads at build time: `import-looks.mjs` (`npm run import:looks -- <sourceDir>`) turns the `Look N/` product folders into @/public/looks + @/lib/looks.json, `import-lookbook.mjs` (`npm run import:lookbook -- <folder>`) turns the LOOKBOOK shoot into @/public/lookbook + @/lib/lookbook.json (one image per unique frame number, with recorded width/height and a `group` id marking runs of near-identical frames, which `/collections` shows as single tap-to-cycle tiles), and `sync-shopify.mjs` (`npm run sync:shopify`) pages through the Admin GraphQL `products` query and writes @/lib/shopify-products.json.
 - Every form (appointment, newsletter, checkout information/shipping) validates inline with the shared validators in @/lib/validation.ts and the @/components/FieldError.tsx message component, so field-level error copy and accessibility wiring are uniform across surfaces.
 
 ### Core Implementation
 
 | Layer | Location | Role |
 |---|---|---|
-| Routes | @/app | Pages, layouts, metadata |
+| Routes | @/app | Pages, layouts, metadata, and the `/api/checkout` route handler (the only server code that calls Shopify at runtime) |
 | UI | @/components | Client/server components incl. cart state (`CartContext`) and the collections gallery: `GalleryGrid` (balanced columns + viewer state), `GalleryStack` (tap-to-cycle / tap-to-expand tile), `GalleryViewer` (full-screen dialog) |
-| Data & utilities | @/lib | Static catalog (with line-sheet prices) + `Product` types, checkout URLs, price format, hero / newsletter `Photo` entries + lookbook gallery manifest and its stacked form (`GALLERY_STACKS`), column balancing, form field validators |
-| Asset pipeline | @/scripts | `import-looks.mjs` (product looks → @/public/looks + @/lib/looks.json) and `import-lookbook.mjs` (LOOKBOOK shoot → @/public/lookbook + @/lib/lookbook.json) |
+| Data & utilities | @/lib | Static catalog (line-sheet copy + prices, joined to the Shopify snapshot for variants) + `Product` types, store-snapshot matcher, server-only Shopify Admin client (token + `draftOrderCreate`), `CheckoutInfo` type, price format, hero / newsletter `Photo` entries + lookbook gallery manifest and its stacked form (`GALLERY_STACKS`), column balancing, form field validators |
+| Offline scripts | @/scripts | `import-looks.mjs` (product looks → @/public/looks + @/lib/looks.json), `import-lookbook.mjs` (LOOKBOOK shoot → @/public/lookbook + @/lib/lookbook.json), `sync-shopify.mjs` (Admin API → @/lib/shopify-products.json) |
 | Tests | @/tests | Vitest + React Testing Library, configured by @/vitest.config.ts and @/vitest.setup.ts |
 
-Cart ("bag") state lives in `localStorage` under the key `haitch-bag`, exposed to React via `useSyncExternalStore` in @/components/CartContext.tsx — the server always renders an empty bag and the real contents appear right after hydration, avoiding SSR mismatch.
+Cart ("bag") state lives in `localStorage` under the key `haitch-bag`, exposed to React via `useSyncExternalStore` in @/components/CartContext.tsx — the server always renders an empty bag and the real contents appear right after hydration, avoiding SSR mismatch. Bag lines are keyed by Shopify `variantId`, which is what `/api/checkout` turns into `gid://shopify/ProductVariant/{id}` line items.
 
 Design references per surface: The Row (nav), Rick Owens (shop grid, checkout stepper), YSL (product page, bag drawer), Phoebe Philo (appointment form), Emily Dawn Long (footer).
 
 ### Things to Know
 
 - @/AGENTS.md (aliased by @/CLAUDE.md) warns that this Next.js version differs from training data and points to guides under `node_modules/next/dist/docs/`.
-- The only environment variable is `NEXT_PUBLIC_FORMSPREE_ID` (target for the appointment and newsletter forms); it defaults to `'placeholder'` when unset.
+- Environment variables: `NEXT_PUBLIC_FORMSPREE_ID` (appointment and newsletter target; defaults to `'placeholder'` when unset) plus the three Shopify values `SHOPIFY_STORE_DOMAIN` (the `*.myshopify.com` host), `SHOPIFY_CLIENT_ID`, and `SHOPIFY_CLIENT_SECRET`. The Shopify values live in Vercel's project env and are pulled into the gitignored `.env.local` for local runs; the sync script reads `.env.local` itself, the route handler reads `process.env`. When any of the three is missing, `/api/checkout` answers 503 and the sync script exits with the missing names. The secret must never be committed or pasted anywhere.
+- The site does not read Shopify at request time except for checkout. Product/variant/price/availability data is the committed snapshot @/lib/shopify-products.json: whenever store products, variants, or prices change, run `npm run sync:shopify` and commit the JSON (then redeploy). Until the sync has been run and committed, the file holds `products: []`, every look has `variants: []`, `AddToCart` never mounts, and the bag/checkout flow is unreachable from the UI — prices still show from the line sheet.
+- Store products are matched to looks by handle first, then by title normalised to lowercase alphanumerics (@/lib/shopify-products.ts); store products with no catalog entry are ignored, and unmatched looks simply stay unpurchasable. A matched look's displayed `price` is its first store variant's price, falling back to the line-sheet figure.
+- `/api/checkout` is the only dynamic route and the only runtime Shopify call; every page is static. Draft-order checkout works for products that are not published to the Online Store channel, which is why it replaced cart permalinks, but discount codes are not applied automatically on the resulting invoice page.
 - Node 25 ships a broken methodless global `localStorage` that shadows jsdom's under Vitest; @/vitest.setup.ts installs an in-memory `Storage` polyfill so cart tests exercise the real Storage API.
 - The `@/` import alias maps to the repo root in both @/tsconfig.json and @/vitest.config.ts.
-- Every catalog entry carries a `price` transcribed from the line sheet (jackets, trousers, and shirts each sit in their own band), so the shop grid and product page show prices for the whole committed catalog. Purchasing is still off: every entry has `variants: []`, so `AddToCart` never mounts and the bag/checkout flow is unreachable from the UI until Shopify variant IDs exist. `Product.price` stays optional in the type and the UI still hides it when undefined.
-- Reconnecting to Shopify later requires creating the products in the store and then either mapping by handle (catalog handles are fixed slug-style handles, chosen to match how Shopify generates handles) or supplying variant IDs into each entry's `variants`. The old `products.json` fetch/normalize code and its fixture were deleted but are recoverable from git history.
-- `cdn.shopify.com` (`/s/files/**`) is the only `remotePatterns` entry and stays because bag lines persisted in visitors' `localStorage` before the catalog switch may still reference legacy Shopify product images. Nothing the app renders today (hero, looks, lookbook, newsletter) references the Shopify CDN; the former `haitch-usa.com` pattern and the per-instance Shopify loader are gone.
+- `cdn.shopify.com` (`/s/files/**`) is the only `remotePatterns` entry and stays because bag lines persisted in visitors' `localStorage` before the catalog switch may still reference legacy Shopify product images. Nothing the app renders today (hero, looks, lookbook, newsletter) references the Shopify CDN.
 - Generated manifests (@/lib/looks.json, @/lib/lookbook.json) and their image folders must be committed together: tests assert every manifest path exists on disk. The same applies to the hand-made hero files: @/tests/hero.test.tsx asserts both exist under @/public/home with the expected orientations.
 - Which lookbook frames collapse into one `/collections` tile is decided offline, not in the app: @/scripts/import-lookbook.mjs assigns the `group` ids in @/lib/lookbook.json from frame-number gaps, a greyscale pixel-distance threshold, orientation flips, and a maximum run length. Re-running the importer recomputes the stacks along with the images; the app only folds *consecutive* equal `group` values (`stackImages` in @/lib/gallery-layout.ts).
 

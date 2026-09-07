@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "import:looks": "node scripts/import-looks.mjs",
-    "import:lookbook": "node scripts/import-lookbook.mjs"
+    "import:lookbook": "node scripts/import-lookbook.mjs",
+    "sync:shopify": "node scripts/sync-shopify.mjs"
   },
   "dependencies": {
     "next": "16.2.10",

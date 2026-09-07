@@ -152,8 +152,20 @@
 }
 
 .continue:hover:enabled,
-.payButton:hover {
+.payButton:hover:enabled {
   opacity: 0.85;
+}
+
+.payButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.paymentError {
+  margin-top: 16px;
+  font-size: 10px;
+  letter-spacing: var(--tracking);
+  color: #8b0000;
 }
 
 .continue:disabled {

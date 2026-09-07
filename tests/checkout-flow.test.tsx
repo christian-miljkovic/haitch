@@ -73,25 +73,60 @@ describe('checkout flow', () => {
     expect(step(/information/i)).toHaveAttribute('aria-current', 'step');
   });
 
-  test('payment step hands off to Shopify with bag lines and details prefilled', async () => {
-    const user = await renderCheckoutWithItem();
-    await user.click(screen.getByRole('button', { name: /continue/i }));
-    await user.type(screen.getByLabelText(/email/i), 'harry@example.com');
-    await user.type(screen.getByLabelText(/first name/i), 'Harry');
-    await user.type(screen.getByLabelText(/last name/i), 'Tillman');
-    await user.click(screen.getByRole('button', { name: /continue/i }));
-    await user.type(screen.getByLabelText(/address/i), '1 Savile Row');
-    await user.type(screen.getByLabelText(/city/i), 'New York');
-    await user.type(screen.getByLabelText(/state/i), 'NY');
-    await user.type(screen.getByLabelText(/zip/i), '10001');
-    await user.click(screen.getByRole('button', { name: /continue/i }));
+  test('payment step creates the Shopify order for the bag and sends the customer to pay', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ url: 'https://example.myshopify.com/invoices/abc' }), { status: 200 })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    try {
+      const user = await renderCheckoutWithItem();
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+      await user.type(screen.getByLabelText(/email/i), 'harry@example.com');
+      await user.type(screen.getByLabelText(/first name/i), 'Harry');
+      await user.type(screen.getByLabelText(/last name/i), 'Tillman');
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+      await user.type(screen.getByLabelText(/address/i), '1 Savile Row');
+      await user.type(screen.getByLabelText(/city/i), 'New York');
+      await user.type(screen.getByLabelText(/state/i), 'NY');
+      await user.type(screen.getByLabelText(/zip/i), '10001');
+      await user.click(screen.getByRole('button', { name: /continue/i }));
 
-    const pay = screen.getByRole('link', { name: /proceed to payment/i });
-    const href = pay.getAttribute('href')!;
-    expect(href).toContain(`haitch-usa.com/cart/${mediumVariant.id}:1`);
-    const params = new URL(href).searchParams;
-    expect(params.get('checkout[email]')).toBe('harry@example.com');
-    expect(params.get('checkout[shipping_address][city]')).toBe('New York');
+      await user.click(screen.getByRole('button', { name: /proceed to payment/i }));
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+      expect(url).toBe('/api/checkout');
+      const body = JSON.parse(init.body as string);
+      expect(body.lines).toEqual([{ variantId: mediumVariant.id, quantity: 1 }]);
+      expect(body.info).toMatchObject({ email: 'harry@example.com', city: 'New York', zip: '10001' });
+      await vi.waitFor(() => expect(assign).toHaveBeenCalledWith('https://example.myshopify.com/invoices/abc'));
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  test('tells the customer when the order could not be started', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: 'nope' }), { status: 502 })));
+    try {
+      const user = await renderCheckoutWithItem();
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+      await user.type(screen.getByLabelText(/email/i), 'harry@example.com');
+      await user.type(screen.getByLabelText(/first name/i), 'Harry');
+      await user.type(screen.getByLabelText(/last name/i), 'Tillman');
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+      await user.type(screen.getByLabelText(/address/i), '1 Savile Row');
+      await user.type(screen.getByLabelText(/city/i), 'New York');
+      await user.type(screen.getByLabelText(/state/i), 'NY');
+      await user.type(screen.getByLabelText(/zip/i), '10001');
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+      await user.click(screen.getByRole('button', { name: /proceed to payment/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(/could not start your order/i);
+      expect(screen.getByRole('button', { name: /proceed to payment/i })).toBeEnabled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   test('order summary shows the running total throughout', async () => {

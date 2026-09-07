@@ -1,0 +1,107 @@
+import type { CheckoutInfo } from './checkout';
+
+// Server-side access to the Shopify Admin API using the client credentials
+// grant of the store's own Dev Dashboard app. Import only from route handlers
+// or server components: the client secret must never reach the browser.
+
+const API_VERSION = '2026-07';
+
+type Config = { domain: string; clientId: string; clientSecret: string };
+
+export function readConfig(): Config | null {
+  const domain = process.env.SHOPIFY_STORE_DOMAIN;
+  const clientId = process.env.SHOPIFY_CLIENT_ID;
+  const clientSecret = process.env.SHOPIFY_CLIENT_SECRET;
+  return domain && clientId && clientSecret ? { domain, clientId, clientSecret } : null;
+}
+
+let cached: { token: string; expiresAt: number } | null = null;
+
+async function accessToken(config: Config): Promise<string> {
+  if (cached && cached.expiresAt > Date.now() + 60_000) return cached.token;
+  const res = await fetch(`https://${config.domain}/admin/oauth/access_token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      grant_type: 'client_credentials',
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
+    }),
+  });
+  const body = (await res.json().catch(() => ({}))) as { access_token?: string; expires_in?: number };
+  if (!res.ok || !body.access_token) {
+    throw new Error(`Shopify token exchange failed (${res.status}): ${JSON.stringify(body)}`);
+  }
+  cached = { token: body.access_token, expiresAt: Date.now() + (body.expires_in ?? 3600) * 1000 };
+  return cached.token;
+}
+
+async function adminGraphql<T>(config: Config, query: string, variables: unknown): Promise<T> {
+  const token = await accessToken(config);
+  const res = await fetch(`https://${config.domain}/admin/api/${API_VERSION}/graphql.json`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': token },
+    body: JSON.stringify({ query, variables }),
+  });
+  const body = (await res.json()) as { data?: T; errors?: unknown };
+  if (!res.ok || body.errors || !body.data) {
+    throw new Error(`Shopify request failed (${res.status}): ${JSON.stringify(body.errors ?? body)}`);
+  }
+  return body.data;
+}
+
+const DRAFT_ORDER_CREATE = `
+  mutation DraftOrderCreate($input: DraftOrderInput!) {
+    draftOrderCreate(input: $input) {
+      draftOrder { id invoiceUrl }
+      userErrors { field message }
+    }
+  }
+`;
+
+type DraftOrderResult = {
+  draftOrderCreate: {
+    draftOrder: { id: string; invoiceUrl: string } | null;
+    userErrors: { field: string[] | null; message: string }[];
+  };
+};
+
+export type CheckoutLine = { variantId: number; quantity: number };
+
+export class ShopifyUserError extends Error {}
+
+// Creates a draft order for the bag and returns Shopify's hosted payment link.
+// Draft orders can be paid even for products not published to the Online Store.
+export async function createDraftOrder(
+  config: Config,
+  lines: CheckoutLine[],
+  info: CheckoutInfo
+): Promise<string> {
+  const province = info.province?.trim() ?? '';
+  const data = await adminGraphql<DraftOrderResult>(config, DRAFT_ORDER_CREATE, {
+    input: {
+      email: info.email,
+      lineItems: lines.map((l) => ({
+        variantId: `gid://shopify/ProductVariant/${l.variantId}`,
+        quantity: l.quantity,
+      })),
+      shippingAddress: {
+        firstName: info.firstName,
+        lastName: info.lastName,
+        phone: info.phone || undefined,
+        address1: info.address1,
+        address2: info.address2 || undefined,
+        city: info.city,
+        ...(province.length === 2 ? { provinceCode: province.toUpperCase() } : { province }),
+        zip: info.zip,
+        countryCode: 'US',
+      },
+      useCustomerDefaultAddress: false,
+    },
+  });
+  const { draftOrder, userErrors } = data.draftOrderCreate;
+  if (userErrors.length || !draftOrder) {
+    throw new ShopifyUserError(userErrors.map((e) => e.message).join('; ') || 'Draft order not created');
+  }
+  return draftOrder.invoiceUrl;
+}

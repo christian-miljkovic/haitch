@@ -1,5 +1,7 @@
 import looks from './looks.json';
+import store from './shopify-products.json';
 import type { Product, ProductDetailGroup } from './product';
+import { matchToCatalog } from './shopify-products';
 
 // Copy from the "Website 2.0 Outline" line sheet, keyed to the photo look
 // each garment was shot in and listed in the line sheet's order (jackets,
@@ -207,17 +209,24 @@ const LOOKS: Look[] = [
   },
 ];
 
-const PRODUCTS: Product[] = LOOKS.map((entry) => ({
-  id: entry.look,
-  handle: entry.handle,
-  title: entry.title,
-  description: entry.description,
-  price: entry.price,
-  images: looks.looks.find((l) => l.look === entry.look)?.images ?? [],
-  sizes: entry.sizes,
-  details: entry.details,
-  variants: [],
-}));
+// Purchasable variants come from the Shopify store (npm run sync:shopify);
+// a look with no store match stays unpurchasable at its line-sheet price.
+const { matched: STORE } = matchToCatalog(store.products, LOOKS);
+
+const PRODUCTS: Product[] = LOOKS.map((entry) => {
+  const variants = STORE[entry.handle]?.variants ?? [];
+  return {
+    id: entry.look,
+    handle: entry.handle,
+    title: entry.title,
+    description: entry.description,
+    price: variants[0]?.price ?? entry.price,
+    images: looks.looks.find((l) => l.look === entry.look)?.images ?? [],
+    sizes: entry.sizes,
+    details: entry.details,
+    variants,
+  };
+});
 
 export function getProducts(): Product[] {
   return PRODUCTS;

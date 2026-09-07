@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { buildCheckoutUrl, type CheckoutInfo } from '@/lib/checkout';
+import type { CheckoutInfo } from '@/lib/checkout';
 import { formatPrice } from '@/lib/format';
 import { email, none, optionalPhone, required, type Validator } from '@/lib/validation';
 import FieldError from './FieldError';
@@ -37,6 +37,7 @@ export default function CheckoutFlow() {
   const [step, setStep] = useState(0);
   const [info, setInfo] = useState<CheckoutInfo>({ country: 'United States' });
   const [attempted, setAttempted] = useState(false);
+  const [payment, setPayment] = useState<'idle' | 'starting' | 'error'>('idle');
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
 
   if (lines.length === 0) {
@@ -72,6 +73,26 @@ export default function CheckoutFlow() {
   const tryContinue = () => {
     setAttempted(true);
     if (canContinue) goTo(step + 1);
+  };
+
+  // Creates the Shopify order for the bag and sends the customer to pay for it.
+  const startPayment = async () => {
+    setPayment('starting');
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lines: lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity })),
+          info,
+        }),
+      });
+      const body = (await res.json()) as { url?: string };
+      if (!res.ok || !body.url) throw new Error('checkout failed');
+      window.location.assign(body.url);
+    } catch {
+      setPayment('error');
+    }
   };
 
   const continueLabel = step === 2 ? 'CONTINUE TO PAYMENT' : 'CONTINUE';
@@ -202,15 +223,14 @@ export default function CheckoutFlow() {
               You will be redirected to our secure checkout to complete payment. Shop Pay, Apple
               Pay, Google Pay and all major cards are accepted.
             </p>
-            <a
-              className={styles.payButton}
-              href={buildCheckoutUrl(
-                lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity })),
-                info
-              )}
-            >
-              PROCEED TO PAYMENT
-            </a>
+            <button className={styles.payButton} onClick={startPayment} disabled={payment === 'starting'}>
+              {payment === 'starting' ? 'STARTING YOUR ORDER…' : 'PROCEED TO PAYMENT'}
+            </button>
+            {payment === 'error' && (
+              <p className={styles.paymentError} role="alert">
+                We could not start your order. Please try again or email info@haitch-usa.com.
+              </p>
+            )}
           </section>
         )}
 
