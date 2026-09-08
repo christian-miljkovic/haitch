@@ -4,6 +4,7 @@
 // image's path and output dimensions.
 //
 //   node scripts/import-lookbook.mjs ~/Downloads/LOOKBOOK [--max-width 1600] [--max-height 2000] [--quality 78]
+//   node scripts/import-lookbook.mjs ./season-1 --out lookbook-season-1 --manifest lib/lookbook-season-1.json
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,10 +53,12 @@ export async function importLookbook({
   maxWidth = 1600,
   maxHeight = 2000,
   quality = 78,
+  // Folder under public/ (and URL prefix) so several seasons can coexist.
+  outName = 'lookbook',
 }) {
   const frames = uniqueFrames(walk(sourceDir));
 
-  const outDir = path.join(publicDir, 'lookbook');
+  const outDir = path.join(publicDir, outName);
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir, { recursive: true });
 
@@ -73,7 +76,7 @@ export async function importLookbook({
       .greyscale()
       .raw()
       .toBuffer();
-    images.push({ src: `/lookbook/${name}`, width, height, frame: Number(frame), signature });
+    images.push({ src: `/${outName}/${name}`, width, height, frame: Number(frame), signature });
   }
 
   let group = 0;
@@ -115,21 +118,24 @@ if (invokedDirectly) {
       'max-width': { type: 'string', default: '1600' },
       'max-height': { type: 'string', default: '2000' },
       quality: { type: 'string', default: '78' },
+      out: { type: 'string', default: 'lookbook' },
+      manifest: { type: 'string', default: 'lib/lookbook.json' },
     },
   });
   const sourceDir = positionals[0];
   if (!sourceDir) {
-    console.error('usage: node scripts/import-lookbook.mjs <sourceDir> [--max-width 1600] [--max-height 2000] [--quality 78]');
+    console.error('usage: node scripts/import-lookbook.mjs <sourceDir> [--max-width 1600] [--max-height 2000] [--quality 78] [--out lookbook] [--manifest lib/lookbook.json]');
     process.exit(1);
   }
   const root = path.resolve(fileURLToPath(import.meta.url), '../..');
   const images = await importLookbook({
     sourceDir: path.resolve(sourceDir),
     publicDir: path.join(root, 'public'),
-    manifestPath: path.join(root, 'lib', 'lookbook.json'),
+    manifestPath: path.resolve(root, values.manifest),
     maxWidth: Number(values['max-width']),
     maxHeight: Number(values['max-height']),
     quality: Number(values.quality),
+    outName: values.out,
   });
   console.log(`${images.length} lookbook images written`);
 }

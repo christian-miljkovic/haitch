@@ -4,10 +4,11 @@ import path from 'node:path';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CollectionsPage from '@/app/collections/page';
-import { GALLERY_IMAGES, GALLERY_STACKS } from '@/lib/gallery';
+import SeasonPage from '@/app/collections/[season]/page';
+import { GALLERY_IMAGES, GALLERY_STACKS, SEASONS } from '@/lib/gallery';
 
 const publicDir = path.join(process.cwd(), 'public');
-const file = (src: string | null) => decodeURIComponent(src ?? '').match(/lookbook(?:%2F|\/)(\d+)/)?.[1];
+const file = (src: string | null) => decodeURIComponent(src ?? '').match(/lookbook(?:-season-\d)?(?:%2F|\/)(\d+)/)?.[1];
 
 describe('collections gallery', () => {
   test('every lookbook image exists on disk and no frame is repeated', () => {
@@ -86,5 +87,36 @@ describe('collections gallery', () => {
 
     await user.click(within(viewer).getByRole('button', { name: /close/i }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  test('every season’s photos exist on disk and no season is empty', () => {
+    expect(SEASONS.map((s) => s.slug)).toEqual(['season-2', 'season-1']);
+    for (const season of SEASONS) {
+      expect(season.stacks.length).toBeGreaterThan(0);
+      for (const image of season.stacks.flatMap((s) => s.images)) {
+        expect(fs.existsSync(path.join(publicDir, image.src)), `${image.src} missing`).toBe(true);
+      }
+    }
+  });
+
+  test('the collections page opens on Season 2 with a tab to Season 1', () => {
+    render(<CollectionsPage />);
+    const tabs = screen.getByRole('navigation', { name: /seasons/i });
+    const current = within(tabs).getByRole('link', { name: /season 2/i });
+    expect(current).toHaveAttribute('aria-current', 'page');
+    expect(within(tabs).getByRole('link', { name: /season 1/i })).toHaveAttribute('href', '/collections/season-1');
+    expect(screen.getAllByRole('img')).toHaveLength(GALLERY_STACKS.length);
+  });
+
+  test('the Season 1 route shows the previous collection with the same tile behaviour', async () => {
+    const season1 = SEASONS.find((s) => s.slug === 'season-1')!;
+    const ui = await SeasonPage({ params: Promise.resolve({ season: 'season-1' }) });
+    render(ui);
+    const tabs = screen.getByRole('navigation', { name: /seasons/i });
+    expect(within(tabs).getByRole('link', { name: /season 1/i })).toHaveAttribute('aria-current', 'page');
+    expect(within(tabs).getByRole('link', { name: /season 2/i })).toHaveAttribute('href', '/collections');
+    const imgs = screen.getAllByRole('img');
+    expect(imgs).toHaveLength(season1.stacks.length);
+    expect(file(imgs[0].getAttribute('src'))).toBe(file(season1.stacks[0].images[0].src));
   });
 });

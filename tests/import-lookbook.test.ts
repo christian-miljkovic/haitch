@@ -95,4 +95,21 @@ describe('import-lookbook script', () => {
     expect(group('1345')).not.toBe(group('1202'));
     expect(group('0900')).not.toBe(group('1200'));
   });
+
+  test('can write to a named folder so several seasons coexist', async () => {
+    await importLookbook({
+      sourceDir,
+      publicDir,
+      manifestPath,
+      maxWidth: 200,
+      maxHeight: 250,
+      quality: 80,
+      outName: 'lookbook-season-1',
+    });
+    expect(fs.existsSync(path.join(publicDir, 'lookbook-season-1', '1200.jpg'))).toBe(true);
+    // The default folder is left alone, stale file included.
+    expect(fs.existsSync(path.join(publicDir, 'lookbook', '0001.jpg'))).toBe(true);
+    const { images } = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    expect(images[0].src).toBe('/lookbook-season-1/0900.jpg');
+  });
 });

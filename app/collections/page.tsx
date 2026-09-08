@@ -1,12 +1,18 @@
 import type { Metadata } from 'next';
 import GalleryGrid from '@/components/GalleryGrid';
-import { GALLERY_STACKS } from '@/lib/gallery';
-import { balanceColumns } from '@/lib/gallery-layout';
+import SeasonTabs from '@/components/SeasonTabs';
+import { SEASONS } from '@/lib/gallery';
+import { GALLERY_COLUMNS, balanceColumns } from '@/lib/gallery-layout';
 
 export const metadata: Metadata = { title: 'Collections' };
 
-const COLUMNS = 3;
-
+// The current season lives at /collections; earlier seasons at /collections/[season].
 export default function CollectionsPage() {
-  return <GalleryGrid columns={balanceColumns(GALLERY_STACKS, COLUMNS)} />;
+  const current = SEASONS[0];
+  return (
+    <>
+      <SeasonTabs active={current.slug} />
+      <GalleryGrid columns={balanceColumns(current.stacks, GALLERY_COLUMNS)} />
+    </>
+  );
 }

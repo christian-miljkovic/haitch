@@ -2,6 +2,9 @@ import type { GalleryImage } from './gallery';
 
 export type Sized = { width: number; height: number };
 
+// Columns in the collections mosaic on wide screens.
+export const GALLERY_COLUMNS = 3;
+
 // Similar frames from the same set, shown as one tile that cycles on tap.
 export type GalleryStack = Sized & { images: GalleryImage[] };
 
