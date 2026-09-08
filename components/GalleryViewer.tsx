@@ -1,23 +1,32 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { GalleryImage } from '@/lib/gallery';
+import type { Photo } from '@/lib/gallery';
 import styles from './GalleryViewer.module.css';
 
 type Props = {
-  images: GalleryImage[];
-  position: number;
+  images: Photo[];
+  // Spoken name of what is being viewed, e.g. "Lookbook image 4" or a product title.
+  label: string;
   frame: number;
   onFrameChange: (frame: number) => void;
   onClose: () => void;
 };
 
-// Full-screen view of one tile's frames. Arrow keys and the side controls step
-// through the frames; Escape or the close control returns to the gallery.
-export default function GalleryViewer({ images, position, frame, onFrameChange, onClose }: Props) {
+const ZOOM = 2;
+
+// Only magnify for a real pointer; touch devices pinch instead.
+const canHover = () =>
+  typeof matchMedia === 'undefined' || matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+// Full-screen view of a set of frames. Arrow keys and the side controls step
+// through them, hovering magnifies the photo under the cursor, and Escape or
+// the close control returns to the page.
+export default function GalleryViewer({ images, label, frame, onFrameChange, onClose }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null);
   const count = images.length;
   const step = (delta: number) => onFrameChange((frame + delta + count) % count);
 
@@ -44,12 +53,21 @@ export default function GalleryViewer({ images, position, frame, onFrameChange, 
 
   const image = images[frame];
 
+  const magnify = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!canHover()) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setOrigin({
+      x: rect.width ? ((e.clientX - rect.left) / rect.width) * 100 : 50,
+      y: rect.height ? ((e.clientY - rect.top) / rect.height) * 100 : 50,
+    });
+  };
+
   return createPortal(
     <div
       className={styles.root}
       role="dialog"
       aria-modal="true"
-      aria-label={`Lookbook image ${position + 1}${count > 1 ? `, frame ${frame + 1} of ${count}` : ''}`}
+      aria-label={`${label}${count > 1 ? `, frame ${frame + 1} of ${count}` : ''}`}
     >
       <button ref={closeRef} className={styles.close} onClick={onClose} aria-label="Close">
         ✕
@@ -59,11 +77,18 @@ export default function GalleryViewer({ images, position, frame, onFrameChange, 
         <Image
           key={image.src}
           src={image.src}
-          alt={`HAITCH lookbook image ${position + 1}${count > 1 ? `, frame ${frame + 1}` : ''}`}
+          alt={`${label}${count > 1 ? `, frame ${frame + 1}` : ''}`}
           width={image.width}
           height={image.height}
           sizes="100vw"
-          className={styles.image}
+          className={`${styles.image} ${origin ? styles.magnified : ''}`}
+          style={
+            origin
+              ? { transformOrigin: `${origin.x}% ${origin.y}%`, transform: `scale(${ZOOM})` }
+              : undefined
+          }
+          onMouseMove={magnify}
+          onMouseLeave={() => setOrigin(null)}
           priority
         />
       </div>

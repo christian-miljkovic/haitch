@@ -17,6 +17,8 @@ type Look = {
   sizes: string;
   description: string;
   details: ProductDetailGroup[];
+  // 1-based positions of shoot frames to leave out of this product's gallery.
+  omitImages?: number[];
 };
 
 const TAILORED_SIZES = '44, 46, 48, 50, 52, 54, 56, 58 EU';
@@ -57,7 +59,7 @@ const LOOKS: Look[] = [
         heading: 'Styling Details',
         items: [
           'One-button closure',
-          '4 1/4” peak lapel with satin',
+          '4 1/4” peak lapel',
           'Two straight jet pockets',
           'Center vent',
           'Black horn buttons',
@@ -78,7 +80,7 @@ const LOOKS: Look[] = [
         heading: 'Styling Details',
         items: [
           'One-button closure',
-          '4 1/4” peak lapel with satin',
+          '4 1/4” peak lapel',
           'Two straight jet pockets',
           'Center vent',
           'Brown horn buttons',
@@ -99,7 +101,7 @@ const LOOKS: Look[] = [
         heading: 'Styling Details',
         items: [
           'Six-button closure',
-          '4 1/4” peak lapel with satin',
+          '4 1/4” peak lapel',
           'Two straight jet pockets',
           'Center vent',
           'Brown horn buttons',
@@ -126,6 +128,8 @@ const LOOKS: Look[] = [
     price: 800,
     title: 'BLACK PLAIN WEAVE TROUSERS',
     sizes: TAILORED_SIZES,
+    // The sixth frame is a portrait crop that does not show the trousers.
+    omitImages: [6],
     description: `Single-pleat tailored trousers made with British worsted wool. ${MADE_TO_ORDER}`,
     details: [
       { heading: 'Styling Details', items: ['Single-pleat', 'Belt loops', 'Back right pocket'] },
@@ -221,7 +225,9 @@ const PRODUCTS: Product[] = LOOKS.map((entry) => {
     title: entry.title,
     description: entry.description,
     price: variants[0]?.price ?? entry.price,
-    images: looks.looks.find((l) => l.look === entry.look)?.images ?? [],
+    images: (looks.looks.find((l) => l.look === entry.look)?.images ?? []).filter(
+      (_, i) => !entry.omitImages?.includes(i + 1)
+    ),
     sizes: entry.sizes,
     details: entry.details,
     variants,

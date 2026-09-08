@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { CartProvider } from '@/components/CartContext';
 import ProductPage from '@/app/products/[handle]/page';
 import { getProduct } from '@/lib/catalog';
@@ -63,17 +64,50 @@ describe('product page', () => {
     tux.images.forEach((img, i) => expect(srcs[i]).toContain(img));
   });
 
-  test('shows the description, sizes and detail lists from the line sheet', async () => {
+  test('shows the description and sizes, with the detail lists folded behind MORE DETAILS', async () => {
+    const user = userEvent.setup();
     const tux = getProduct('tuxedo-jacket-in-black-barathea')!;
     await renderPage(tux.handle);
     expect(screen.getByText(tux.description)).toBeInTheDocument();
     expect(screen.getByText(tux.sizes, { exact: false })).toBeInTheDocument();
+
+    const toggle = screen.getByRole('button', { name: /more details/i });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    for (const group of tux.details) {
+      expect(screen.queryByRole('heading', { name: group.heading })).not.toBeInTheDocument();
+    }
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
     for (const group of tux.details) {
       expect(screen.getByRole('heading', { name: group.heading })).toBeInTheDocument();
-      for (const item of group.items) {
-        expect(screen.getByText(item)).toBeInTheDocument();
-      }
+      for (const item of group.items) expect(screen.getByText(item)).toBeInTheDocument();
     }
+
+    await user.click(toggle);
+    expect(screen.queryByText(tux.details[0].items[0])).not.toBeInTheDocument();
+  });
+
+  test('a product photo opens full screen and magnifies under the cursor', async () => {
+    const user = userEvent.setup();
+    const tux = getProduct('tuxedo-jacket-in-black-barathea')!;
+    await renderPage(tux.handle);
+    const photos = screen.getAllByRole('button', { name: /view .* full screen/i });
+    expect(photos).toHaveLength(tux.images.length);
+
+    await user.click(photos[1]);
+    const viewer = screen.getByRole('dialog', { name: new RegExp(tux.title, 'i') });
+    const img = within(viewer).getByRole('img');
+    expect(decodeURIComponent(img.getAttribute('src') ?? '')).toContain(tux.images[1]);
+
+    expect(img.style.transform).toBe('');
+    fireEvent.mouseMove(img, { clientX: 10, clientY: 10 });
+    expect(img.style.transform).toMatch(/scale\(2/);
+    fireEvent.mouseLeave(img);
+    expect(img.style.transform).toBe('');
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   test('hides price and purchase controls while the look has no variants', async () => {

@@ -1,0 +1,88 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 0;
+  font-size: 11px;
+  letter-spacing: var(--tracking);
+  text-align: left;
+}
+
+/* Hairline plus that turns into a minus when open. */
+.icon {
+  position: relative;
+  width: 10px;
+  height: 10px;
+}
+
+.icon::before,
+.icon::after {
+  content: '';
+  position: absolute;
+  background: currentColor;
+  transition: transform 0.45s var(--ease);
+}
+
+.icon::before {
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1px;
+}
+
+.icon::after {
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+}
+
+.iconOpen::after {
+  transform: scaleY(0);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0 20px;
+  animation: panelIn 0.35s var(--ease);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.groupHeading {
+  font-size: inherit;
+  font-weight: inherit;
+  color: var(--muted);
+}
+
+.group ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  line-height: 1.8;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

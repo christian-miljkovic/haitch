@@ -46,7 +46,7 @@ export default function GalleryGrid({ columns }: { columns: Placed<Stack>[][] })
       {open && current && (
         <GalleryViewer
           images={current.item.images}
-          position={open.tile}
+          label={`Lookbook image ${open.tile + 1}`}
           frame={open.frame}
           onFrameChange={(frame) => setOpen({ tile: open.tile, frame })}
           onClose={() => setOpen(null)}

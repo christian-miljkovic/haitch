@@ -46,4 +46,18 @@ describe('catalog', () => {
   test('returns undefined for an unknown handle', () => {
     expect(getProduct('not-a-look')).toBeUndefined();
   });
+
+  test('the black plain weave trousers drop their last photo, which does not show the trousers', () => {
+    const trousers = getProduct('black-plain-weave-trousers')!;
+    const manifest = looks.looks.find((l) => l.look === 10)!.images;
+    expect(trousers.images).toEqual(manifest.slice(0, -1));
+    expect(trousers.images).not.toContain('/looks/look-10/06.jpg');
+  });
+
+  test('only the tuxedo pieces mention satin', () => {
+    for (const p of getProducts()) {
+      const mentionsSatin = p.details.some((g) => g.items.some((i) => /satin/i.test(i)));
+      expect(mentionsSatin, p.handle).toBe(p.handle.startsWith('tuxedo-'));
+    }
+  });
 });

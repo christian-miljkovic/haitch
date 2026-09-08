@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AddToCart from '@/components/AddToCart';
+import ProductDetails from '@/components/ProductDetails';
 import ProductGallery from '@/components/ProductGallery';
 import SizeGuide from '@/components/SizeGuide';
 import { formatPrice } from '@/lib/format';
@@ -43,21 +44,7 @@ export default async function ProductPage({ params }: Props) {
 
           <p className={styles.description}>{product.description}</p>
 
-          {product.details.length > 0 && (
-            <div className={styles.details}>
-              <h2 className={styles.detailsHeading}>MORE DETAILS</h2>
-              {product.details.map((group) => (
-                <div key={group.heading} className={styles.detailGroup}>
-                  <h3 className={styles.detailGroupHeading}>{group.heading}</h3>
-                  <ul role="list">
-                    {group.items.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
+          {product.details.length > 0 && <ProductDetails groups={product.details} />}
 
           <ul className={styles.links}>
             <li>

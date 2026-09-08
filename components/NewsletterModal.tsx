@@ -95,7 +95,8 @@ export default function NewsletterModal() {
                   <>
                     <h2 className={styles.title}>NEWSLETTER</h2>
                     <p className={styles.intro}>
-                      New collections, launches and atelier news. Nothing more.
+                      Subscribe to the HAITCH newsletter to receive exclusive information on new
+                      collections, trunk shows, events, and press.
                     </p>
                     <form className={styles.form} onSubmit={submit} noValidate>
                       <div className={styles.field}>
