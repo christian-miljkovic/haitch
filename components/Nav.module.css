@@ -52,13 +52,16 @@
   transform-origin: left center;
 }
 
+/* The HAITCH logotype: Founders Grotesk Bold, tight-set, as in the brand mark. */
 .wordmark {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 17px;
-  letter-spacing: var(--tracking-wide);
-  text-indent: var(--tracking-wide);
+  font-family: var(--font-wordmark);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
 }
 
