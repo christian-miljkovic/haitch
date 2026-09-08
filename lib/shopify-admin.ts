@@ -108,7 +108,25 @@ export async function createDraftOrder(
 
 const CUSTOMER_BY_EMAIL = `
   query CustomerByEmail($query: String!) {
-    customers(first: 1, query: $query) { nodes { id } }
+    customers(first: 1, query: $query) { nodes { id note } }
+  }
+`;
+
+const CUSTOMER_UPDATE = `
+  mutation CustomerUpdate($input: CustomerInput!) {
+    customerUpdate(input: $input) {
+      customer { id }
+      userErrors { field message }
+    }
+  }
+`;
+
+const TAGS_ADD = `
+  mutation TagsAdd($id: ID!, $tags: [String!]!) {
+    tagsAdd(id: $id, tags: $tags) {
+      node { id }
+      userErrors { field message }
+    }
   }
 `;
 
@@ -138,16 +156,26 @@ function assertNoErrors(userErrors: UserErrors, fallback: string) {
 
 const consent = { marketingState: 'SUBSCRIBED', marketingOptInLevel: 'SINGLE_OPT_IN' };
 
+type CustomerRef = { id: string; note: string | null };
+
+async function findCustomer(config: Config, email: string): Promise<CustomerRef | undefined> {
+  const data = await adminGraphql<{ customers: { nodes: CustomerRef[] } }>(config, CUSTOMER_BY_EMAIL, {
+    query: `email:${JSON.stringify(email)}`,
+  });
+  return data.customers.nodes[0];
+}
+
+function splitName(name: string): { firstName: string; lastName: string | undefined } {
+  const [firstName, ...rest] = name.trim().split(/\s+/);
+  return { firstName, lastName: rest.join(' ') || undefined };
+}
+
 // Subscribes an email address to marketing: creates the customer, or updates
 // consent when the address already belongs to one.
 export async function subscribeToNewsletter(config: Config, name: string, email: string): Promise<void> {
-  const [firstName, ...rest] = name.trim().split(/\s+/);
-  const lastName = rest.join(' ') || undefined;
+  const { firstName, lastName } = splitName(name);
 
-  const existing = await adminGraphql<{ customers: { nodes: { id: string }[] } }>(config, CUSTOMER_BY_EMAIL, {
-    query: `email:${JSON.stringify(email)}`,
-  });
-  const customerId = existing.customers.nodes[0]?.id;
+  const customerId = (await findCustomer(config, email))?.id;
 
   if (customerId) {
     const data = await adminGraphql<{ customerEmailMarketingConsentUpdate: { userErrors: UserErrors } }>(
@@ -165,4 +193,49 @@ export async function subscribeToNewsletter(config: Config, name: string, email:
     { input: { email, firstName, lastName, emailMarketingConsent: consent } }
   );
   assertNoErrors(data.customerCreate.userErrors, 'Customer not created');
+}
+
+export type AppointmentRequest = { name: string; email: string; phone: string; message: string };
+
+export const APPOINTMENT_TAG = 'appointment-request';
+
+// Files an appointment request against the customer's Shopify record: the
+// message (with phone and time) goes into the customer note and the record is
+// tagged so requests can be filtered in the admin. No marketing consent is set.
+export async function recordAppointmentRequest(
+  config: Config,
+  enquiry: AppointmentRequest,
+  now: Date = new Date()
+): Promise<void> {
+  const stamp = now.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
+  const entry = [
+    `Appointment request — ${stamp}`,
+    `Phone: ${enquiry.phone || '—'}`,
+    '',
+    enquiry.message.trim(),
+  ].join('\n');
+
+  const existing = await findCustomer(config, enquiry.email);
+
+  if (existing) {
+    const note = existing.note ? `${existing.note}\n\n${entry}` : entry;
+    const updated = await adminGraphql<{ customerUpdate: { userErrors: UserErrors } }>(config, CUSTOMER_UPDATE, {
+      input: { id: existing.id, note },
+    });
+    assertNoErrors(updated.customerUpdate.userErrors, 'Customer note not updated');
+    const tagged = await adminGraphql<{ tagsAdd: { userErrors: UserErrors } }>(config, TAGS_ADD, {
+      id: existing.id,
+      tags: [APPOINTMENT_TAG],
+    });
+    assertNoErrors(tagged.tagsAdd.userErrors, 'Customer not tagged');
+    return;
+  }
+
+  const { firstName, lastName } = splitName(enquiry.name);
+  const created = await adminGraphql<{ customerCreate: { customer: { id: string } | null; userErrors: UserErrors } }>(
+    config,
+    CUSTOMER_CREATE,
+    { input: { email: enquiry.email, firstName, lastName, note: entry, tags: [APPOINTMENT_TAG] } }
+  );
+  assertNoErrors(created.customerCreate.userErrors, 'Customer not created');
 }
