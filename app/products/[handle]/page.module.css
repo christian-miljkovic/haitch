@@ -20,6 +20,15 @@
   max-width: 420px;
   margin: 0 auto;
   padding: 96px 24px;
+  /* When the panel outgrows the viewport (MORE DETAILS open) it scrolls on
+     its own, so the whole gallery never has to be scrolled past first. */
+  max-height: calc(100svh - var(--nav-height));
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.panel::-webkit-scrollbar {
+  display: none;
 }
 
 .title {
@@ -61,5 +70,7 @@
   .panel {
     position: static;
     padding: 40px 24px 80px;
+    max-height: none;
+    overflow: visible;
   }
 }
