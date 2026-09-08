@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { CheckoutInfo } from '@/lib/checkout';
 import { createDraftOrder, readConfig, type CheckoutLine } from '@/lib/shopify-admin';
+import { unavailableLines } from '@/lib/shopify-products';
+import store from '@/lib/shopify-products.json';
 
 type Body = { lines?: unknown; info?: unknown };
 
@@ -30,6 +32,13 @@ export async function POST(request: Request) {
   const info = (body.info ?? {}) as CheckoutInfo;
   if (!lines || !info.email) {
     return NextResponse.json({ error: 'A bag and an email address are required.' }, { status: 400 });
+  }
+
+  if (unavailableLines(lines, store.products).length > 0) {
+    return NextResponse.json(
+      { error: 'One or more items in your bag are no longer available.' },
+      { status: 409 }
+    );
   }
 
   try {

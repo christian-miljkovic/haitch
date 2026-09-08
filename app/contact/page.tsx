@@ -30,12 +30,12 @@ export default function ContactPage() {
         </section>
 
         <section className={styles.section}>
-          <h2 className={styles.label}>ATELIER</h2>
+          <h2 className={styles.label}>SHOWROOM</h2>
           <Link className={styles.value} href="/appointment">
             BOOK AN APPOINTMENT ›
           </Link>
           <p className={styles.note}>
-            Fittings and made-to-order tailoring at our New York City atelier, by appointment.
+            Fittings and made-to-order tailoring at our New York City showroom, by appointment.
           </p>
         </section>
 

@@ -60,4 +60,11 @@ describe('catalog', () => {
       expect(mentionsSatin, p.handle).toBe(p.handle.startsWith('tuxedo-'));
     }
   });
+
+  test('the black plain weave jacket leads with the hand-on-hip frame and drops the walking shot', () => {
+    const jacket = getProduct('black-plain-weave-jacket')!;
+    const manifest = looks.looks.find((l) => l.look === 8)!.images;
+    expect(jacket.images).toEqual([manifest[3], manifest[0], manifest[1], manifest[2], manifest[4]]);
+    expect(jacket.images).not.toContain('/looks/look-8/06.jpg');
+  });
 });

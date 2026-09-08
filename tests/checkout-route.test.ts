@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { POST } from '@/app/api/checkout/route';
+import store from '@/lib/shopify-products.json';
+
+// A variant the store actually sells, so the stock guard lets the order through.
+const VARIANT = store.products.flatMap((p) => p.variants).find((v) => v.available)!.id;
 
 const fetchMock = vi.fn();
 
@@ -37,7 +41,7 @@ const request = (body: unknown) =>
   });
 
 const bag = {
-  lines: [{ variantId: 4711, quantity: 2 }],
+  lines: [{ variantId: VARIANT, quantity: 2 }],
   info: {
     email: 'harry@example.com',
     firstName: 'Harry',
@@ -68,7 +72,7 @@ describe('POST /api/checkout', () => {
     const [, mutationInit] = fetchMock.mock.calls.find(([url]) => (url as string).includes('/graphql.json')) as [string, RequestInit];
     expect((mutationInit.headers as Record<string, string>)['X-Shopify-Access-Token']).toBe('shpat_x');
     const { variables } = JSON.parse(mutationInit.body as string);
-    expect(variables.input.lineItems).toEqual([{ variantId: 'gid://shopify/ProductVariant/4711', quantity: 2 }]);
+    expect(variables.input.lineItems).toEqual([{ variantId: `gid://shopify/ProductVariant/${VARIANT}`, quantity: 2 }]);
     expect(variables.input.email).toBe('harry@example.com');
     expect(variables.input.shippingAddress).toMatchObject({
       firstName: 'Harry',
@@ -100,6 +104,14 @@ describe('POST /api/checkout', () => {
     vi.stubEnv('SHOPIFY_CLIENT_SECRET', '');
     const res = await POST(request(bag));
     expect(res.status).toBe(503);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test('refuses a bag line for a variant the store does not sell, without creating an order', async () => {
+    stubShopify({});
+    const res = await POST(request({ ...bag, lines: [{ variantId: 999999, quantity: 1 }] }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toMatch(/no longer available/i);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

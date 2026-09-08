@@ -17,8 +17,8 @@ type Look = {
   sizes: string;
   description: string;
   details: ProductDetailGroup[];
-  // 1-based positions of shoot frames to leave out of this product's gallery.
-  omitImages?: number[];
+  // 1-based shoot frames to show, in display order. Omit to show every frame as shot.
+  frames?: number[];
 };
 
 const TAILORED_SIZES = '44, 46, 48, 50, 52, 54, 56, 58 EU';
@@ -53,6 +53,8 @@ const LOOKS: Look[] = [
     price: 1500,
     title: 'BLACK PLAIN WEAVE JACKET',
     sizes: TAILORED_SIZES,
+    // Lead with the full-length hand-on-hip frame; the walking shot is left out.
+    frames: [4, 1, 2, 3, 5],
     description: `Single-breasted tailored jacket made with British worsted wool, featuring a peak lapel. ${MADE_TO_ORDER}`,
     details: [
       {
@@ -129,7 +131,7 @@ const LOOKS: Look[] = [
     title: 'BLACK PLAIN WEAVE TROUSERS',
     sizes: TAILORED_SIZES,
     // The sixth frame is a portrait crop that does not show the trousers.
-    omitImages: [6],
+    frames: [1, 2, 3, 4, 5],
     description: `Single-pleat tailored trousers made with British worsted wool. ${MADE_TO_ORDER}`,
     details: [
       { heading: 'Styling Details', items: ['Single-pleat', 'Belt loops', 'Back right pocket'] },
@@ -213,6 +215,11 @@ const LOOKS: Look[] = [
   },
 ];
 
+function selectFrames(images: string[], frames?: number[]): string[] {
+  if (!frames) return images;
+  return frames.map((n) => images[n - 1]).filter((src): src is string => Boolean(src));
+}
+
 // Purchasable variants come from the Shopify store (npm run sync:shopify);
 // a look with no store match stays unpurchasable at its line-sheet price.
 const { matched: STORE } = matchToCatalog(store.products, LOOKS);
@@ -225,9 +232,7 @@ const PRODUCTS: Product[] = LOOKS.map((entry) => {
     title: entry.title,
     description: entry.description,
     price: variants[0]?.price ?? entry.price,
-    images: (looks.looks.find((l) => l.look === entry.look)?.images ?? []).filter(
-      (_, i) => !entry.omitImages?.includes(i + 1)
-    ),
+    images: selectFrames(looks.looks.find((l) => l.look === entry.look)?.images ?? [], entry.frames),
     sizes: entry.sizes,
     details: entry.details,
     variants,

@@ -42,6 +42,16 @@
   text-transform: uppercase;
 }
 
+/* Everything sold out: the photo recedes and the price gives way to a label. */
+.soldOut .frame {
+  opacity: 0.55;
+}
+
+.soldOutLabel {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 @media (max-width: 767px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);

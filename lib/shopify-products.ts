@@ -54,3 +54,13 @@ export function orderVariants(variants: ProductVariant[], sizes: string): Produc
   };
   return [...variants].sort((a, b) => rank(a.size) - rank(b.size));
 }
+
+// Variant ids from a bag that the store cannot sell right now: unknown to the
+// snapshot or marked unavailable.
+export function unavailableLines(
+  lines: { variantId: number; quantity: number }[],
+  store: StoreProduct[]
+): number[] {
+  const available = new Set(store.flatMap((p) => p.variants.filter((v) => v.available).map((v) => v.id)));
+  return lines.filter((l) => !available.has(l.variantId)).map((l) => l.variantId);
+}

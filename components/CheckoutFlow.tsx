@@ -38,6 +38,7 @@ export default function CheckoutFlow() {
   const [info, setInfo] = useState<CheckoutInfo>({ country: 'United States' });
   const [attempted, setAttempted] = useState(false);
   const [payment, setPayment] = useState<'idle' | 'starting' | 'error'>('idle');
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
 
   if (lines.length === 0) {
@@ -87,10 +88,16 @@ export default function CheckoutFlow() {
           info,
         }),
       });
-      const body = (await res.json()) as { url?: string };
+      const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (res.status === 409) {
+        setPaymentError(body.error ?? 'One or more items in your bag are no longer available.');
+        setPayment('error');
+        return;
+      }
       if (!res.ok || !body.url) throw new Error('checkout failed');
       window.location.assign(body.url);
     } catch {
+      setPaymentError(null);
       setPayment('error');
     }
   };
@@ -228,7 +235,7 @@ export default function CheckoutFlow() {
             </button>
             {payment === 'error' && (
               <p className={styles.paymentError} role="alert">
-                We could not start your order. Please try again or email info@haitch-usa.com.
+                {paymentError ?? 'We could not start your order. Please try again or email info@haitch-usa.com.'}
               </p>
             )}
           </section>

@@ -61,7 +61,7 @@ export default function SizeGuide() {
 
             <div className={styles.body}>
               <p className={styles.intro}>
-                If you have any question regarding the sizing, the HAITCH atelier will be pleased
+                If you have any question regarding the sizing, the HAITCH showroom will be pleased
                 to assist you.
               </p>
               <p className={styles.intro}>

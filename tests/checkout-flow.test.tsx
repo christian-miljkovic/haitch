@@ -123,6 +123,30 @@ describe('checkout flow', () => {
       await user.click(screen.getByRole('button', { name: /continue/i }));
       await user.click(screen.getByRole('button', { name: /proceed to payment/i }));
       expect(await screen.findByRole('alert')).toHaveTextContent(/could not start your order/i);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  test('tells the customer when something in the bag has sold out', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ error: 'One or more items in your bag are no longer available.' }), { status: 409 }))
+    );
+    try {
+      const user = await renderCheckoutWithItem();
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+      await user.type(screen.getByLabelText(/email/i), 'harry@example.com');
+      await user.type(screen.getByLabelText(/first name/i), 'Harry');
+      await user.type(screen.getByLabelText(/last name/i), 'Tillman');
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+      await user.type(screen.getByLabelText(/address/i), '1 Savile Row');
+      await user.type(screen.getByLabelText(/city/i), 'New York');
+      await user.type(screen.getByLabelText(/state/i), 'NY');
+      await user.type(screen.getByLabelText(/zip/i), '10001');
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+      await user.click(screen.getByRole('button', { name: /proceed to payment/i }));
+      expect(await screen.findByRole('alert')).toHaveTextContent(/no longer available/i);
       expect(screen.getByRole('button', { name: /proceed to payment/i })).toBeEnabled();
     } finally {
       vi.unstubAllGlobals();

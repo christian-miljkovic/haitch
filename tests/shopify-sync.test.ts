@@ -7,7 +7,7 @@ import {
   keepCatalogProducts,
 } from '../scripts/sync-shopify.mjs';
 import fs from 'node:fs';
-import { matchToCatalog, orderVariants } from '@/lib/shopify-products';
+import { matchToCatalog, orderVariants, unavailableLines } from '@/lib/shopify-products';
 
 const config = {
   domain: 'example.myshopify.com',
@@ -179,5 +179,26 @@ describe('snapshot only carries catalog products', () => {
       entries
     );
     expect(kept.map((p: { id: number }) => p.id)).toEqual([2]);
+  });
+});
+
+describe('stock guard', () => {
+  const store = [
+    {
+      id: 1,
+      handle: 'x',
+      title: 'X',
+      status: 'ACTIVE',
+      variants: [
+        { id: 11, size: 'S', price: 1, available: true },
+        { id: 12, size: 'M', price: 1, available: false },
+      ],
+    },
+  ];
+
+  test('flags bag lines whose variant is sold out or unknown, and passes available ones', () => {
+    expect(unavailableLines([{ variantId: 11, quantity: 1 }], store)).toEqual([]);
+    expect(unavailableLines([{ variantId: 12, quantity: 1 }], store)).toEqual([12]);
+    expect(unavailableLines([{ variantId: 99, quantity: 1 }], store)).toEqual([99]);
   });
 });

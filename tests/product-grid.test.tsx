@@ -41,4 +41,15 @@ describe('shop grid', () => {
     expect(within(tileFor(priced.handle)).getByText(/\$\s?750/)).toBeInTheDocument();
     expect(within(tileFor(unpriced.handle)).queryByText(/\$/)).not.toBeInTheDocument();
   });
+
+  test('a product with every size sold out is marked SOLD OUT instead of inviting a purchase', () => {
+    const soldOut = makePurchasableProduct({
+      handle: 'gone',
+      title: 'GONE JACKET',
+      variants: makePurchasableProduct().variants.map((v) => ({ ...v, available: false })),
+    });
+    render(<ProductGrid products={[soldOut, makePurchasableProduct()]} />);
+    expect(within(tileFor('gone')).getByText(/sold out/i)).toBeInTheDocument();
+    expect(within(tileFor('test-jacket')).queryByText(/sold out/i)).not.toBeInTheDocument();
+  });
 });
