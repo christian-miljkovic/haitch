@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import './globals.css';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://haitch.vercel.app'),
+  metadataBase: new URL('https://haitch-usa.com'),
   title: {
     default: 'HAITCH',
     template: '%s — HAITCH',
