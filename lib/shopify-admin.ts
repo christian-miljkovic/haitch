@@ -105,3 +105,64 @@ export async function createDraftOrder(
   }
   return draftOrder.invoiceUrl;
 }
+
+const CUSTOMER_BY_EMAIL = `
+  query CustomerByEmail($query: String!) {
+    customers(first: 1, query: $query) { nodes { id } }
+  }
+`;
+
+const CUSTOMER_CREATE = `
+  mutation CustomerCreate($input: CustomerInput!) {
+    customerCreate(input: $input) {
+      customer { id }
+      userErrors { field message }
+    }
+  }
+`;
+
+const CONSENT_UPDATE = `
+  mutation ConsentUpdate($input: CustomerEmailMarketingConsentUpdateInput!) {
+    customerEmailMarketingConsentUpdate(input: $input) {
+      customer { id }
+      userErrors { field message }
+    }
+  }
+`;
+
+type UserErrors = { field: string[] | null; message: string }[];
+
+function assertNoErrors(userErrors: UserErrors, fallback: string) {
+  if (userErrors.length) throw new ShopifyUserError(userErrors.map((e) => e.message).join('; ') || fallback);
+}
+
+const consent = { marketingState: 'SUBSCRIBED', marketingOptInLevel: 'SINGLE_OPT_IN' };
+
+// Subscribes an email address to marketing: creates the customer, or updates
+// consent when the address already belongs to one.
+export async function subscribeToNewsletter(config: Config, name: string, email: string): Promise<void> {
+  const [firstName, ...rest] = name.trim().split(/\s+/);
+  const lastName = rest.join(' ') || undefined;
+
+  const existing = await adminGraphql<{ customers: { nodes: { id: string }[] } }>(config, CUSTOMER_BY_EMAIL, {
+    query: `email:${JSON.stringify(email)}`,
+  });
+  const customerId = existing.customers.nodes[0]?.id;
+
+  if (customerId) {
+    const data = await adminGraphql<{ customerEmailMarketingConsentUpdate: { userErrors: UserErrors } }>(
+      config,
+      CONSENT_UPDATE,
+      { input: { customerId, emailMarketingConsent: consent } }
+    );
+    assertNoErrors(data.customerEmailMarketingConsentUpdate.userErrors, 'Subscription not updated');
+    return;
+  }
+
+  const data = await adminGraphql<{ customerCreate: { customer: { id: string } | null; userErrors: UserErrors } }>(
+    config,
+    CUSTOMER_CREATE,
+    { input: { email, firstName, lastName, emailMarketingConsent: consent } }
+  );
+  assertNoErrors(data.customerCreate.userErrors, 'Customer not created');
+}

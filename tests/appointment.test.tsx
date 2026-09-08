@@ -53,7 +53,7 @@ describe('book an appointment form', () => {
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
   });
 
-  test('submits all answers to Formspree and shows the thank-you state', async () => {
+  test('submits all answers to the appointment route and shows the thank-you state', async () => {
     const user = userEvent.setup();
     render(<AppointmentForm />);
 
@@ -65,7 +65,7 @@ describe('book an appointment form', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toContain('formspree.io');
+    expect(url).toBe('/api/appointment');
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body as string);
     expect(body).toMatchObject({

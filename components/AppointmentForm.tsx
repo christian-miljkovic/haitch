@@ -5,8 +5,6 @@ import { email, phone, required, type Validator } from '@/lib/validation';
 import FieldError from './FieldError';
 import styles from './AppointmentForm.module.css';
 
-const FORMSPREE_ID = process.env.NEXT_PUBLIC_FORMSPREE_ID ?? 'placeholder';
-
 type FieldKey = 'name' | 'email' | 'phone' | 'message';
 
 const FIELDS: { key: FieldKey; label: string; type: string; validate: Validator }[] = [
@@ -49,9 +47,9 @@ export default function AppointmentForm() {
     if (FIELDS.some((f) => f.validate(values[f.key]))) return;
     setStatus('sending');
     try {
-      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+      const res = await fetch('/api/appointment', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
       setStatus(res.ok ? 'sent' : 'error');

@@ -8,7 +8,6 @@ import FieldError from './FieldError';
 import { NEWSLETTER_IMAGE } from '@/lib/gallery';
 import styles from './NewsletterModal.module.css';
 
-const FORMSPREE_ID = process.env.NEXT_PUBLIC_FORMSPREE_ID ?? 'placeholder';
 
 export default function NewsletterModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -44,10 +43,10 @@ export default function NewsletterModal() {
     if (nameError || emailError || status === 'sending') return;
     setStatus('sending');
     try {
-      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+      const res = await fetch('/api/newsletter', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ name, email, form: 'newsletter' }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email }),
       });
       setStatus(res.ok ? 'sent' : 'error');
     } catch {

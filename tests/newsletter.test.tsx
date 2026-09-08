@@ -55,9 +55,9 @@ describe('newsletter modal', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toContain('formspree.io');
+    expect(url).toBe('/api/newsletter');
     const body = JSON.parse(init.body as string);
-    expect(body).toMatchObject({ name: 'Harry Tillman', email: 'harry@example.com' });
+    expect(body).toEqual({ name: 'Harry Tillman', email: 'harry@example.com' });
     expect(await within(dialog).findByText(/thank you/i)).toBeInTheDocument();
   });
 
