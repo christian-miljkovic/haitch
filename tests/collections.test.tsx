@@ -5,7 +5,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CollectionsPage from '@/app/collections/page';
 import SeasonPage from '@/app/collections/[season]/page';
-import { GALLERY_IMAGES, GALLERY_STACKS, SEASONS } from '@/lib/gallery';
+import { CURRENT_SEASON, GALLERY_IMAGES, GALLERY_STACKS, SEASONS } from '@/lib/gallery';
 
 const publicDir = path.join(process.cwd(), 'public');
 const file = (src: string | null) => decodeURIComponent(src ?? '').match(/lookbook(?:-season-\d)?(?:%2F|\/)(\d+)/)?.[1];
@@ -90,7 +90,8 @@ describe('collections gallery', () => {
   });
 
   test('every season’s photos exist on disk and no season is empty', () => {
-    expect(SEASONS.map((s) => s.slug)).toEqual(['season-2', 'season-1']);
+    expect(SEASONS.map((s) => s.slug)).toEqual(['season-1', 'season-2']);
+    expect(CURRENT_SEASON.slug).toBe('season-2');
     for (const season of SEASONS) {
       expect(season.stacks.length).toBeGreaterThan(0);
       for (const image of season.stacks.flatMap((s) => s.images)) {
@@ -102,6 +103,7 @@ describe('collections gallery', () => {
   test('the collections page opens on Season 2 with a tab to Season 1', () => {
     render(<CollectionsPage />);
     const tabs = screen.getByRole('navigation', { name: /seasons/i });
+    expect(within(tabs).getAllByRole('link').map((a) => a.textContent)).toEqual(['SEASON 1', 'SEASON 2']);
     const current = within(tabs).getByRole('link', { name: /season 2/i });
     expect(current).toHaveAttribute('aria-current', 'page');
     expect(within(tabs).getByRole('link', { name: /season 1/i })).toHaveAttribute('href', '/collections/season-1');

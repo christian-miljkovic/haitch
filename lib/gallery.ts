@@ -19,11 +19,11 @@ export const GALLERY_STACKS = stackImages(GALLERY_IMAGES);
 
 export type Season = { slug: string; label: string; title: string; href: string; stacks: GalleryStack[] };
 
-// Collections tabs, newest first. Season 2 is the current shoot at /collections;
-// Season 1 is the previous editorial gallery, imported from its original files
-// into public/lookbook-season-1.
+// Collections, in chronological order for the tab strip. The last entry is
+// the current season and lives at /collections; earlier seasons are archived
+// at /collections/[season]. Season 1 is the previous editorial gallery,
+// imported from its original files into public/lookbook-season-1.
 export const SEASONS: Season[] = [
-  { slug: 'season-2', label: 'SEASON 2', title: 'Season 2', href: '/collections', stacks: GALLERY_STACKS },
   {
     slug: 'season-1',
     label: 'SEASON 1',
@@ -31,7 +31,11 @@ export const SEASONS: Season[] = [
     href: '/collections/season-1',
     stacks: stackImages(season1.images),
   },
+  { slug: 'season-2', label: 'SEASON 2', title: 'Season 2', href: '/collections', stacks: GALLERY_STACKS },
 ];
+
+export const CURRENT_SEASON = SEASONS[SEASONS.length - 1];
+export const ARCHIVED_SEASONS = SEASONS.filter((s) => s !== CURRENT_SEASON);
 
 // Newsletter modal picture: lookbook frame 1012 per the line sheet, falling
 // back to the first portrait frame if that frame is ever dropped from the shoot.

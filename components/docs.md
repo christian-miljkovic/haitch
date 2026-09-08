@@ -46,7 +46,7 @@ PAYMENT step ── PROCEED TO PAYMENT ──▶ startPayment()
 **Collections gallery** is a server-rendered season switcher plus three client components under one state owner. Both routes render the same pair for a different `Season`:
 
 ```
-app/collections/page.tsx            (season = SEASONS[0])      ┐
+app/collections/page.tsx            (season = CURRENT_SEASON)  ┐
 app/collections/[season]/page.tsx   (season = archived match)  ┘── SeasonTabs active={season.slug}   (server; Links over SEASONS)
                                                                 └── balanceColumns(season.stacks, GALLERY_COLUMNS) ──▶ GalleryGrid
                                                                             open: { tile, frame } | null
