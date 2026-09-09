@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import type { Photo } from '@/lib/gallery';
-import styles from './GalleryViewer.module.css';
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import type { Photo } from "@/lib/gallery";
+import styles from "./GalleryViewer.module.css";
 
 type Props = {
   images: Photo[];
@@ -13,28 +13,40 @@ type Props = {
   frame: number;
   onFrameChange: (frame: number) => void;
   onClose: () => void;
+  // Hovering magnifies the photo under the cursor. On for product photos,
+  // where detail matters; off for the editorial lookbook.
+  magnify?: boolean;
 };
 
 const ZOOM = 2;
 
 // Only magnify for a real pointer; touch devices pinch instead.
 const canHover = () =>
-  typeof matchMedia === 'undefined' || matchMedia('(hover: hover) and (pointer: fine)').matches;
+  typeof matchMedia === "undefined" ||
+  matchMedia("(hover: hover) and (pointer: fine)").matches;
 
 // Full-screen view of a set of frames. Arrow keys and the side controls step
-// through them, hovering magnifies the photo under the cursor, and Escape or
-// the close control returns to the page.
-export default function GalleryViewer({ images, label, frame, onFrameChange, onClose }: Props) {
+// through them, hovering optionally magnifies the photo under the cursor, and
+// Escape or the close control returns to the page.
+export default function GalleryViewer({
+  images,
+  label,
+  frame,
+  onFrameChange,
+  onClose,
+  magnify = false,
+}: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null);
   const count = images.length;
-  const step = (delta: number) => onFrameChange((frame + delta + count) % count);
+  const step = (delta: number) =>
+    onFrameChange((frame + delta + count) % count);
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     closeRef.current?.focus();
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
       opener?.focus();
@@ -43,18 +55,18 @@ export default function GalleryViewer({ images, label, frame, onFrameChange, onC
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      if (count > 1 && e.key === 'ArrowRight') step(1);
-      if (count > 1 && e.key === 'ArrowLeft') step(-1);
+      if (e.key === "Escape") onClose();
+      if (count > 1 && e.key === "ArrowRight") step(1);
+      if (count > 1 && e.key === "ArrowLeft") step(-1);
     };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   });
 
   const image = images[frame];
 
-  const magnify = (e: React.MouseEvent<HTMLImageElement>) => {
-    if (!canHover()) return;
+  const trackCursor = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (!magnify || !canHover()) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setOrigin({
       x: rect.width ? ((e.clientX - rect.left) / rect.width) * 100 : 50,
@@ -67,27 +79,38 @@ export default function GalleryViewer({ images, label, frame, onFrameChange, onC
       className={styles.root}
       role="dialog"
       aria-modal="true"
-      aria-label={`${label}${count > 1 ? `, frame ${frame + 1} of ${count}` : ''}`}
+      aria-label={`${label}${count > 1 ? `, frame ${frame + 1} of ${count}` : ""}`}
     >
-      <button ref={closeRef} className={styles.close} onClick={onClose} aria-label="Close">
+      <button
+        ref={closeRef}
+        className={styles.close}
+        onClick={onClose}
+        aria-label="Close"
+      >
         ✕
       </button>
 
-      <div className={styles.stage} onClick={() => (count > 1 ? step(1) : onClose())}>
+      <div
+        className={styles.stage}
+        onClick={() => (count > 1 ? step(1) : onClose())}
+      >
         <Image
           key={image.src}
           src={image.src}
-          alt={`${label}${count > 1 ? `, frame ${frame + 1}` : ''}`}
+          alt={`${label}${count > 1 ? `, frame ${frame + 1}` : ""}`}
           width={image.width}
           height={image.height}
           sizes="100vw"
-          className={`${styles.image} ${origin ? styles.magnified : ''}`}
+          className={`${styles.image} ${magnify ? styles.zoomable : ""} ${origin ? styles.magnified : ""}`}
           style={
             origin
-              ? { transformOrigin: `${origin.x}% ${origin.y}%`, transform: `scale(${ZOOM})` }
+              ? {
+                  transformOrigin: `${origin.x}% ${origin.y}%`,
+                  transform: `scale(${ZOOM})`,
+                }
               : undefined
           }
-          onMouseMove={magnify}
+          onMouseMove={trackCursor}
           onMouseLeave={() => setOrigin(null)}
           priority
         />
@@ -102,7 +125,11 @@ export default function GalleryViewer({ images, label, frame, onFrameChange, onC
           >
             ‹
           </button>
-          <button className={`${styles.arrow} ${styles.next}`} onClick={() => step(1)} aria-label="Next frame">
+          <button
+            className={`${styles.arrow} ${styles.next}`}
+            onClick={() => step(1)}
+            aria-label="Next frame"
+          >
             ›
           </button>
           <p className={styles.counter}>
@@ -115,6 +142,6 @@ export default function GalleryViewer({ images, label, frame, onFrameChange, onC
         </>
       )}
     </div>,
-    document.body
+    document.body,
   );
 }

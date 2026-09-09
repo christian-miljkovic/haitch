@@ -30,7 +30,7 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .image {
+  .zoomable {
     cursor: zoom-in;
   }
 

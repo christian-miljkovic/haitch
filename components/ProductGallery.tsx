@@ -75,6 +75,7 @@ export default function ProductGallery({ images, title }: { images: string[]; ti
           frame={open}
           onFrameChange={setOpen}
           onClose={() => setOpen(null)}
+          magnify
         />
       )}
     </div>

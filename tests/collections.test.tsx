@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CollectionsPage from '@/app/collections/page';
 import SeasonPage from '@/app/collections/[season]/page';
@@ -63,6 +63,16 @@ describe('collections gallery', () => {
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  test('the collections viewer shows the photo at full size without the product-page magnifier', async () => {
+    const user = userEvent.setup();
+    render(<CollectionsPage />);
+    await user.click(screen.getAllByRole('button', { name: /view .*full screen/i })[0]);
+    const img = within(screen.getByRole('dialog', { name: /lookbook/i })).getByRole('img');
+    fireEvent.mouseMove(img, { clientX: 10, clientY: 10 });
+    expect(img.style.transform).toBe('');
+    expect(img.className).not.toMatch(/magnif/);
   });
 
   test('a stacked tile can be expanded and stepped through full screen', async () => {
