@@ -47,20 +47,21 @@ describe('size guide', () => {
     }
   });
 
-  test('measurements read in inches with fractions, and convert to whole centimetres', async () => {
+  test('measurements read as plain inch fractions without unit marks, and convert to whole centimetres', async () => {
     const { user, dialog } = await openGuide();
     expect(within(dialog).getByRole('radio', { name: /inch/i })).toBeChecked();
     const jacket = within(dialog).getByRole('table', { name: /jacket/i });
-    // Jacket 46 shoulders: 18 1/2 inches.
-    expect(within(jacket).getAllByText('18 1/2"').length).toBeGreaterThan(0);
+    // Jacket 46 shoulders: 18 1/2 inches, written without a " mark.
+    expect(within(jacket).getAllByText('18 1/2').length).toBeGreaterThan(0);
+    expect(within(jacket).queryAllByText(/"/)).toHaveLength(0);
     const shirts = within(dialog).getByRole('table', { name: /shirt/i });
-    expect(within(shirts).getByText('15"')).toBeInTheDocument();
+    expect(within(shirts).getByText('15')).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole('radio', { name: /cm/i }));
     // 18.5 in → 47 cm; 15 in → 38 cm.
     expect(within(jacket).getAllByText('47 cm').length).toBeGreaterThan(0);
     expect(within(shirts).getByText('38 cm')).toBeInTheDocument();
-    expect(within(shirts).queryByText('15"')).not.toBeInTheDocument();
+    expect(within(shirts).queryByText('15')).not.toBeInTheDocument();
   });
 
   test('trouser waist sizes are plain size numbers, not measurements, in either unit', async () => {

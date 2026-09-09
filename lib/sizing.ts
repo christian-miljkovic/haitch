@@ -45,11 +45,12 @@ export type Unit = 'inch' | 'cm';
 
 const FRACTIONS: Record<number, string> = { 0.25: '1/4', 0.5: '1/2', 0.75: '3/4' };
 
-// 18.5 → 18 1/2", matching how the line sheet writes measurements.
+// 18.5 → 18 1/2. The line sheet writes an inch mark after each value; the
+// guide drops it because the INCH/CM toggle already names the unit.
 export function formatInches(inches: number): string {
   const whole = Math.floor(inches);
   const fraction = FRACTIONS[Math.round((inches - whole) * 4) / 4];
-  return `${whole}${fraction ? ` ${fraction}` : ''}"`;
+  return `${whole}${fraction ? ` ${fraction}` : ''}`;
 }
 
 export function formatCm(inches: number): string {
