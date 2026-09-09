@@ -52,9 +52,6 @@ export default function SizeGuide() {
                   If you have any question regarding the sizing, the HAITCH showroom will be pleased
                   to assist you.
                 </p>
-                <p className={styles.intro}>
-                  All HAITCH tailoring items are made to order in New York City.
-                </p>
 
                 <div className={styles.measureHeader}>
                   <h3 className={styles.sectionLabel}>GARMENT MEASUREMENTS</h3>

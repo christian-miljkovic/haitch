@@ -19,6 +19,8 @@ describe('size guide', () => {
 
   test('shows the trouser, jacket and shirt garment charts, in deck order, with their size runs', async () => {
     const { dialog } = await openGuide();
+    expect(within(dialog).getByText(/showroom will be pleased to assist/i)).toBeInTheDocument();
+    expect(within(dialog).queryByText(/made to order/i)).not.toBeInTheDocument();
     expect(within(dialog).getAllByRole('table').map((t) => t.getAttribute('aria-labelledby'))).toEqual([
       'size-chart-Trouser',
       'size-chart-Jacket',
