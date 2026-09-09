@@ -28,12 +28,20 @@ export function readAnalyticsConfig(): Config | null {
 }
 
 // No consent banner: the store sells in the US only and sets first-party cookies.
+// `hasUserConsent` gates sending; the three `*Allowed` flags are what Shopify's
+// backend reads to decide whether the event counts in Analytics reports (they
+// default to false in the SDK, so leaving them out reports nothing). Hydrogen
+// derives them from the Customer Privacy API, which returns true wherever a
+// consent banner is not required.
 const HAS_USER_CONSENT = true;
 
 function base(config: Config): ShopifyPageViewPayload {
   return {
     ...getClientBrowserParameters(),
     hasUserConsent: HAS_USER_CONSENT,
+    analyticsAllowed: HAS_USER_CONSENT,
+    marketingAllowed: HAS_USER_CONSENT,
+    saleOfDataAllowed: HAS_USER_CONSENT,
     shopId: config.shopId,
     currency: 'USD',
     acceptedLanguage: 'EN',

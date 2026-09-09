@@ -65,6 +65,11 @@ describe('Shopify analytics', () => {
       currency: 'USD',
       shopifySalesChannel: 'headless',
       hasUserConsent: true,
+      // Shopify only counts an event in its reports when these are true; the
+      // SDK defaults them to false, which silently drops every session.
+      analyticsAllowed: true,
+      marketingAllowed: true,
+      saleOfDataAllowed: true,
       path: '/shop',
     });
     // Events are sent under the store's own domain so cookies carry through to checkout.
@@ -106,6 +111,7 @@ describe('Shopify analytics', () => {
 
     const [event] = eventsNamed('ADD_TO_CART');
     expect(event.payload).toMatchObject({
+      analyticsAllowed: true,
       totalValue: 750,
       products: [
         expect.objectContaining({
