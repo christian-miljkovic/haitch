@@ -225,7 +225,8 @@ function selectFrames(images: string[], frames?: number[]): string[] {
 const { matched: STORE } = matchToCatalog(store.products, LOOKS);
 
 const PRODUCTS: Product[] = LOOKS.map((entry) => {
-  const variants = orderVariants(STORE[entry.handle]?.variants ?? [], entry.sizes);
+  const match = STORE[entry.handle];
+  const variants = orderVariants(match?.variants ?? [], entry.sizes);
   return {
     id: entry.look,
     handle: entry.handle,
@@ -236,6 +237,7 @@ const PRODUCTS: Product[] = LOOKS.map((entry) => {
     sizes: entry.sizes,
     details: entry.details,
     variants,
+    storeId: match?.productId,
   };
 });
 

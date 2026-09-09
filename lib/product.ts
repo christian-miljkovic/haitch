@@ -23,4 +23,6 @@ export type Product = {
   details: ProductDetailGroup[];
   // Empty when nothing is purchasable; the UI renders no add-to-cart.
   variants: ProductVariant[];
+  // Shopify product id when the store carries this product; used for analytics.
+  storeId?: number;
 };

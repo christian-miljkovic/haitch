@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo, useState, useSyncExternalStore } from 'react';
 import type { Product, ProductVariant } from '@/lib/product';
+import { trackAddToCart } from '@/lib/shopify-analytics';
 
 export type BagLine = {
   variantId: number;
@@ -103,6 +104,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       subtotal,
       isOpen,
       add: (product, variant) => {
+        trackAddToCart(product, variant);
         const existing = lines.find((l) => l.variantId === variant.id);
         writeLines(
           existing

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import AddToCart from '@/components/AddToCart';
 import ProductDetails from '@/components/ProductDetails';
 import ProductGallery from '@/components/ProductGallery';
+import ProductView from '@/components/ProductView';
 import SizeGuide from '@/components/SizeGuide';
 import { formatPrice } from '@/lib/format';
 import { getProduct, getProducts } from '@/lib/catalog';
@@ -27,6 +28,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className={styles.layout}>
+      <ProductView product={product} />
       <div className={styles.gallery}>
         <ProductGallery images={product.images} title={product.title} />
       </div>

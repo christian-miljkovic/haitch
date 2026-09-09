@@ -4,6 +4,7 @@ import { CartProvider } from '@/components/CartContext';
 import Nav from '@/components/Nav';
 import BagDrawer from '@/components/BagDrawer';
 import Footer from '@/components/Footer';
+import ShopifyAnalytics from '@/components/ShopifyAnalytics';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <BagDrawer />
         </CartProvider>
         <Analytics />
+        <ShopifyAnalytics />
       </body>
     </html>
   );
