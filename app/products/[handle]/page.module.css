@@ -45,11 +45,6 @@
   line-height: 1.8;
 }
 
-.sizes {
-  font-size: 11px;
-  letter-spacing: var(--tracking);
-}
-
 .links {
   display: flex;
   flex-direction: column;

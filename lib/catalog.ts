@@ -53,8 +53,8 @@ const LOOKS: Look[] = [
     price: 1500,
     title: 'BLACK PLAIN WEAVE JACKET',
     sizes: TAILORED_SIZES,
-    // Lead with the full-length hand-on-hip frame; the walking shot is left out.
-    frames: [4, 1, 2, 3, 5],
+    // Lead with the full-length hand-on-hip frame; the straight-on and walking shots are left out.
+    frames: [4, 1, 2, 5],
     description: `Single-breasted tailored jacket made with British worsted wool, featuring a peak lapel. ${MADE_TO_ORDER}`,
     details: [
       {

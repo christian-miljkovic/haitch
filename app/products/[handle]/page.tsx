@@ -38,8 +38,6 @@ export default async function ProductPage({ params }: Props) {
 
           {product.variants.length > 0 && <AddToCart product={product} />}
 
-          <p className={styles.sizes}>SIZES: {product.sizes}</p>
-
           <SizeGuide />
 
           <p className={styles.description}>{product.description}</p>

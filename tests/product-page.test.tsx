@@ -64,12 +64,13 @@ describe('product page', () => {
     tux.images.forEach((img, i) => expect(srcs[i]).toContain(img));
   });
 
-  test('shows the description and sizes, with the detail lists folded behind MORE DETAILS', async () => {
+  test('shows the description, no size run, and the detail lists folded behind MORE DETAILS', async () => {
     const user = userEvent.setup();
     const tux = getProduct('tuxedo-jacket-in-black-barathea')!;
     await renderPage(tux.handle);
     expect(screen.getByText(tux.description)).toBeInTheDocument();
-    expect(screen.getByText(tux.sizes, { exact: false })).toBeInTheDocument();
+    // Sizes live in the selector only; the separate SIZES line is gone.
+    expect(screen.queryByText(/^SIZES:/)).not.toBeInTheDocument();
 
     const toggle = screen.getByRole('button', { name: /more details/i });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');

@@ -84,40 +84,44 @@
   letter-spacing: var(--tracking);
 }
 
-.conversionSelect {
+.chart {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.select {
-  border: none;
-  border-bottom: 1px solid var(--fg);
-  padding: 8px 0;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23111'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right center;
-  cursor: pointer;
-  text-transform: uppercase;
+.chart + .chart {
+  margin-top: -12px;
+}
+
+.scroller {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
 }
 
 .table {
-  margin-top: 20px;
+  width: 100%;
+  border-collapse: collapse;
   border-top: 1px solid var(--line);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
 }
 
-.row {
-  display: grid;
-  grid-template-columns: 110px repeat(6, 1fr);
-  align-items: baseline;
-  gap: 4px;
-  padding: 14px 0;
+.table th,
+.table td {
+  padding: 12px 2px;
   border-bottom: 1px solid var(--line);
-  font-size: 11px;
+  font-weight: inherit;
+  white-space: nowrap;
 }
 
 .rowLabel {
+  width: 96px;
+  text-align: left;
   font-weight: 600;
   text-transform: uppercase;
 }
@@ -180,8 +184,12 @@
 }
 
 @media (max-width: 600px) {
-  .row {
-    grid-template-columns: 84px repeat(6, 1fr);
+  .table {
+    min-width: 470px;
+  }
+
+  .rowLabel {
+    width: 84px;
   }
 
   .body {

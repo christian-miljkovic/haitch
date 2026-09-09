@@ -1,28 +1,58 @@
-// Size conversions and body measurements for the size guide.
-// NOTE: standard menswear values — replace with HAITCH's real garment
-// measurements when the brand provides them (their live site's own size
-// chart is currently empty).
+// Garment measurements from the HAITCH line sheet ("SIZE CHARTS" slide), in inches.
 
-export const HAITCH_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'] as const;
+export type SizeChart = {
+  name: string;
+  sizes: string[];
+  rows: { label: string; inches: number[] }[];
+};
 
-export const CONVERSION_TABLES = {
-  'UNITED STATES': { label: 'US SIZE', sizes: ['34', '36', '38', '40', '42', '44'] },
-  EUROPE: { label: 'EU SIZE', sizes: ['44', '46', '48', '50', '52', '54'] },
-  'UNITED KINGDOM': { label: 'UK SIZE', sizes: ['34', '36', '38', '40', '42', '44'] },
-} as const;
-
-export type Region = keyof typeof CONVERSION_TABLES;
-
-// Body measurements in centimeters, per size.
-export const BODY_MEASUREMENTS_CM: { label: string; values: number[] }[] = [
-  { label: 'CHEST', values: [88, 94, 100, 106, 112, 118] },
-  { label: 'WAIST', values: [73, 78, 84, 90, 96, 102] },
-  { label: 'HIP', values: [90, 96, 102, 108, 114, 120] },
+export const SIZE_CHARTS: SizeChart[] = [
+  {
+    name: 'Jacket',
+    sizes: ['44', '46', '48', '50', '52', '54', '56', '58'],
+    rows: [
+      { label: 'Shoulders', inches: [18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5] },
+      { label: 'Half Waist', inches: [17.75, 18.5, 19.25, 20, 20.75, 21.5, 22.25, 23] },
+      { label: 'Sleeve Length', inches: [24.25, 24.5, 24.75, 25, 25.25, 25.5, 25.75, 26] },
+      { label: 'Back Length', inches: [28.5, 29, 29.25, 29.75, 30.25, 30.5, 31, 31.25] },
+    ],
+  },
+  {
+    name: 'Trouser',
+    sizes: ['29', '30', '31', '32', '33', '34', '35', '36'],
+    rows: [
+      { label: 'Inseam', inches: [32, 32, 32, 32, 32, 32, 32, 32] },
+      { label: 'Outseam', inches: [41.5, 42, 42.5, 43, 43.5, 44, 44.5, 45] },
+      { label: 'Bottom Width', inches: [17.75, 18.25, 18.5, 19, 19.5, 19.75, 20.25, 20.5] },
+    ],
+  },
+  {
+    name: 'Shirts',
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    rows: [
+      { label: 'Neck', inches: [15, 15.5, 16, 16.5, 17, 17.5] },
+      { label: 'Point to Point', inches: [18.5, 19, 19.5, 20, 20.5, 21] },
+      { label: 'Sleeve Length', inches: [24.75, 25.25, 25.75, 26.25, 26.75, 27.25] },
+      { label: 'Back Length', inches: [29.5, 30, 30.5, 31, 31.5, 32] },
+    ],
+  },
 ];
 
-export const DENIM_SIZES = ['28', '30', '32', '34', '36'];
-export const DENIM_WAIST_CM = [71, 76, 81, 86, 91];
+export type Unit = 'inch' | 'cm';
 
-export function cmToInches(cm: number): number {
-  return Math.round((cm / 2.54) * 2) / 2;
+const FRACTIONS: Record<number, string> = { 0.25: '1/4', 0.5: '1/2', 0.75: '3/4' };
+
+// 18.5 → 18 1/2", matching how the line sheet writes measurements.
+export function formatInches(inches: number): string {
+  const whole = Math.floor(inches);
+  const fraction = FRACTIONS[Math.round((inches - whole) * 4) / 4];
+  return `${whole}${fraction ? ` ${fraction}` : ''}"`;
+}
+
+export function formatCm(inches: number): string {
+  return `${Math.round(inches * 2.54)} cm`;
+}
+
+export function formatMeasurement(inches: number, unit: Unit): string {
+  return unit === 'cm' ? formatCm(inches) : formatInches(inches);
 }
