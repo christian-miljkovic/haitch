@@ -1,29 +1,32 @@
 // Garment measurements from the HAITCH line sheet ("SIZE CHARTS" slide), in inches.
 
-export type SizeChart = {
-  name: string;
-  sizes: string[];
-  rows: { label: string; inches: number[] }[];
-};
+// A row is either garment measurements in inches (converted by the unit toggle)
+// or plain size labels that read the same in any unit, like trouser waist sizes.
+export type SizeRow = { label: string; inches: number[] } | { label: string; labels: string[] };
+export type SizeChart = { name: string; sizes: string[]; rows: SizeRow[] };
 
+const TAILORING_SIZES = ['44', '46', '48', '50', '52', '54', '56', '58'];
+
+// Transcribed from the "SIZE CHARTS" slide of the Website 2.0 Outline deck, in slide order.
 export const SIZE_CHARTS: SizeChart[] = [
   {
+    name: 'Trouser',
+    sizes: TAILORING_SIZES,
+    rows: [
+      { label: 'Waist Size', labels: ['28', '30', '32', '34', '36', '38', '40', '42'] },
+      { label: 'Inseam', inches: [32, 32, 32, 32, 32, 32, 32, 32] },
+      { label: 'Outseam', inches: [41.5, 42, 42.5, 43, 43.5, 44, 44.5, 45] },
+      { label: 'Bottom Width', inches: [17.75, 18.25, 18.5, 19, 19.5, 19.75, 20.25, 20.5] },
+    ],
+  },
+  {
     name: 'Jacket',
-    sizes: ['44', '46', '48', '50', '52', '54', '56', '58'],
+    sizes: TAILORING_SIZES,
     rows: [
       { label: 'Shoulders', inches: [18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5] },
       { label: 'Half Waist', inches: [17.75, 18.5, 19.25, 20, 20.75, 21.5, 22.25, 23] },
       { label: 'Sleeve Length', inches: [24.25, 24.5, 24.75, 25, 25.25, 25.5, 25.75, 26] },
       { label: 'Back Length', inches: [28.5, 29, 29.25, 29.75, 30.25, 30.5, 31, 31.25] },
-    ],
-  },
-  {
-    name: 'Trouser',
-    sizes: ['29', '30', '31', '32', '33', '34', '35', '36'],
-    rows: [
-      { label: 'Inseam', inches: [32, 32, 32, 32, 32, 32, 32, 32] },
-      { label: 'Outseam', inches: [41.5, 42, 42.5, 43, 43.5, 44, 44.5, 45] },
-      { label: 'Bottom Width', inches: [17.75, 18.25, 18.5, 19, 19.5, 19.75, 20.25, 20.5] },
     ],
   },
   {

@@ -14,7 +14,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { season } = await params;
   const match = ARCHIVED_SEASONS.find((s) => s.slug === season);
-  return { title: match ? `${match.title} Collection` : 'Collections' };
+  return { title: match ? match.title : 'Collections' };
 }
 
 export default async function SeasonPage({ params }: Props) {

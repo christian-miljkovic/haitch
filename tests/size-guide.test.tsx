@@ -17,14 +17,19 @@ describe('size guide', () => {
     expect(screen.getByRole('button', { name: /size guide/i })).toBeInTheDocument();
   });
 
-  test('shows the jacket, trouser and shirt garment charts with their size runs', async () => {
+  test('shows the trouser, jacket and shirt garment charts, in deck order, with their size runs', async () => {
     const { dialog } = await openGuide();
+    expect(within(dialog).getAllByRole('table').map((t) => t.getAttribute('aria-labelledby'))).toEqual([
+      'size-chart-Trouser',
+      'size-chart-Jacket',
+      'size-chart-Shirts',
+    ]);
     const jacket = within(dialog).getByRole('table', { name: /jacket/i });
     for (const size of ['44', '46', '48', '50', '52', '54', '56', '58']) {
       expect(within(jacket).getByRole('columnheader', { name: size })).toBeInTheDocument();
     }
     const trouser = within(dialog).getByRole('table', { name: /trouser/i });
-    for (const size of ['29', '30', '31', '32', '33', '34', '35', '36']) {
+    for (const size of ['44', '46', '48', '50', '52', '54', '56', '58']) {
       expect(within(trouser).getByRole('columnheader', { name: size })).toBeInTheDocument();
     }
     const shirts = within(dialog).getByRole('table', { name: /shirt/i });
@@ -34,7 +39,7 @@ describe('size guide', () => {
     for (const row of ['Shoulders', 'Half Waist', 'Sleeve Length', 'Back Length']) {
       expect(within(jacket).getByRole('rowheader', { name: row })).toBeInTheDocument();
     }
-    for (const row of ['Inseam', 'Outseam', 'Bottom Width']) {
+    for (const row of ['Waist Size', 'Inseam', 'Outseam', 'Bottom Width']) {
       expect(within(trouser).getByRole('rowheader', { name: row })).toBeInTheDocument();
     }
     for (const row of ['Neck', 'Point to Point', 'Sleeve Length', 'Back Length']) {
@@ -56,6 +61,20 @@ describe('size guide', () => {
     expect(within(jacket).getAllByText('47 cm').length).toBeGreaterThan(0);
     expect(within(shirts).getByText('38 cm')).toBeInTheDocument();
     expect(within(shirts).queryByText('15"')).not.toBeInTheDocument();
+  });
+
+  test('trouser waist sizes are plain size numbers, not measurements, in either unit', async () => {
+    const { user, dialog } = await openGuide();
+    const trouser = within(dialog).getByRole('table', { name: /trouser/i });
+    const waistCells = () =>
+      within(within(trouser).getByRole('rowheader', { name: 'Waist Size' }).closest('tr')!)
+        .getAllByRole('cell')
+        .map((c) => c.textContent);
+    expect(waistCells()).toEqual(['28', '30', '32', '34', '36', '38', '40', '42']);
+    await user.click(within(dialog).getByRole('radio', { name: /cm/i }));
+    expect(waistCells()).toEqual(['28', '30', '32', '34', '36', '38', '40', '42']);
+    // Real measurements on the same table do convert.
+    expect(within(trouser).getAllByText('81 cm').length).toBeGreaterThan(0);
   });
 
   test('the close button dismisses the guide', async () => {

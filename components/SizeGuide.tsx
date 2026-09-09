@@ -106,11 +106,17 @@ export default function SizeGuide() {
                               <th scope="row" className={styles.rowLabel}>
                                 {row.label}
                               </th>
-                              {row.inches.map((value, i) => (
-                                <td key={i} className={styles.cell}>
-                                  {formatMeasurement(value, unit)}
-                                </td>
-                              ))}
+                              {'labels' in row
+                                ? row.labels.map((value, i) => (
+                                    <td key={i} className={styles.cell}>
+                                      {value}
+                                    </td>
+                                  ))
+                                : row.inches.map((value, i) => (
+                                    <td key={i} className={styles.cell}>
+                                      {formatMeasurement(value, unit)}
+                                    </td>
+                                  ))}
                             </tr>
                           ))}
                         </tbody>

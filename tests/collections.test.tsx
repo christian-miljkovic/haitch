@@ -90,8 +90,8 @@ describe('collections gallery', () => {
   });
 
   test('every season’s photos exist on disk and no season is empty', () => {
-    expect(SEASONS.map((s) => s.slug)).toEqual(['season-1', 'season-2']);
-    expect(CURRENT_SEASON.slug).toBe('season-2');
+    expect(SEASONS.map((s) => s.slug)).toEqual(['collection-1', 'collection-2']);
+    expect(CURRENT_SEASON.slug).toBe('collection-2');
     for (const season of SEASONS) {
       expect(season.stacks.length).toBeGreaterThan(0);
       for (const image of season.stacks.flatMap((s) => s.images)) {
@@ -100,23 +100,23 @@ describe('collections gallery', () => {
     }
   });
 
-  test('the collections page opens on Season 2 with a tab to Season 1', () => {
+  test('the collections page opens on Collection 2 with a tab to Collection 1', () => {
     render(<CollectionsPage />);
-    const tabs = screen.getByRole('navigation', { name: /seasons/i });
-    expect(within(tabs).getAllByRole('link').map((a) => a.textContent)).toEqual(['SEASON 1', 'SEASON 2']);
-    const current = within(tabs).getByRole('link', { name: /season 2/i });
+    const tabs = screen.getByRole('navigation', { name: /collections/i });
+    expect(within(tabs).getAllByRole('link').map((a) => a.textContent)).toEqual(['COLLECTION 1', 'COLLECTION 2']);
+    const current = within(tabs).getByRole('link', { name: /collection 2/i });
     expect(current).toHaveAttribute('aria-current', 'page');
-    expect(within(tabs).getByRole('link', { name: /season 1/i })).toHaveAttribute('href', '/collections/season-1');
+    expect(within(tabs).getByRole('link', { name: /collection 1/i })).toHaveAttribute('href', '/collections/collection-1');
     expect(screen.getAllByRole('img')).toHaveLength(GALLERY_STACKS.length);
   });
 
-  test('the Season 1 route shows the previous collection with the same tile behaviour', async () => {
-    const season1 = SEASONS.find((s) => s.slug === 'season-1')!;
-    const ui = await SeasonPage({ params: Promise.resolve({ season: 'season-1' }) });
+  test('the Collection 1 route shows the previous collection with the same tile behaviour', async () => {
+    const season1 = SEASONS.find((s) => s.slug === 'collection-1')!;
+    const ui = await SeasonPage({ params: Promise.resolve({ season: 'collection-1' }) });
     render(ui);
-    const tabs = screen.getByRole('navigation', { name: /seasons/i });
-    expect(within(tabs).getByRole('link', { name: /season 1/i })).toHaveAttribute('aria-current', 'page');
-    expect(within(tabs).getByRole('link', { name: /season 2/i })).toHaveAttribute('href', '/collections');
+    const tabs = screen.getByRole('navigation', { name: /collections/i });
+    expect(within(tabs).getByRole('link', { name: /collection 1/i })).toHaveAttribute('aria-current', 'page');
+    expect(within(tabs).getByRole('link', { name: /collection 2/i })).toHaveAttribute('href', '/collections');
     const imgs = screen.getAllByRole('img');
     expect(imgs).toHaveLength(season1.stacks.length);
     expect(file(imgs[0].getAttribute('src'))).toBe(file(season1.stacks[0].images[0].src));

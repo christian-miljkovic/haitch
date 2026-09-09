@@ -20,18 +20,24 @@ export const GALLERY_STACKS = stackImages(GALLERY_IMAGES);
 export type Season = { slug: string; label: string; title: string; href: string; stacks: GalleryStack[] };
 
 // Collections, in chronological order for the tab strip. The last entry is
-// the current season and lives at /collections; earlier seasons are archived
-// at /collections/[season]. Season 1 is the previous editorial gallery,
+// the current collection and lives at /collections; earlier ones are archived
+// at /collections/[season]. Collection 1 is the previous editorial gallery,
 // imported from its original files into public/lookbook-season-1.
 export const SEASONS: Season[] = [
   {
-    slug: 'season-1',
-    label: 'SEASON 1',
-    title: 'Season 1',
-    href: '/collections/season-1',
+    slug: 'collection-1',
+    label: 'COLLECTION 1',
+    title: 'Collection 1',
+    href: '/collections/collection-1',
     stacks: stackImages(season1.images),
   },
-  { slug: 'season-2', label: 'SEASON 2', title: 'Season 2', href: '/collections', stacks: GALLERY_STACKS },
+  {
+    slug: 'collection-2',
+    label: 'COLLECTION 2',
+    title: 'Collection 2',
+    href: '/collections',
+    stacks: GALLERY_STACKS,
+  },
 ];
 
 export const CURRENT_SEASON = SEASONS[SEASONS.length - 1];
