@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { STUDIO_EMAIL } from '@/lib/studio';
 import { email, phone, required, type Validator } from '@/lib/validation';
 import FieldError from './FieldError';
 import styles from './AppointmentForm.module.css';
@@ -133,7 +134,7 @@ export default function AppointmentForm() {
 
       {status === 'error' && (
         <p className={styles.error} role="alert">
-          Something went wrong. Please email info@haitch-usa.com.
+          Something went wrong. Please email {STUDIO_EMAIL}.
         </p>
       )}
     </form>

@@ -195,22 +195,36 @@ export async function subscribeToNewsletter(config: Config, name: string, email:
   assertNoErrors(data.customerCreate.userErrors, 'Customer not created');
 }
 
-export type AppointmentRequest = { name: string; email: string; phone: string; message: string };
+export type Enquiry = { name: string; email: string; phone?: string; message: string };
 
-export const APPOINTMENT_TAG = 'appointment-request';
+// What kind of enquiry a record is: the heading of its note entry, the tag the
+// showroom filters Customers on in Shopify admin, and whether the form behind
+// it asks for a phone number. `phone` lives here rather than being inferred
+// from the value, so the note's shape does not depend on how a route parses
+// its body.
+export type EnquiryKind = { label: string; tag: string; phone: boolean };
 
-// Files an appointment request against the customer's Shopify record: the
-// message (with phone and time) goes into the customer note and the record is
-// tagged so requests can be filtered in the admin. No marketing consent is set.
-export async function recordAppointmentRequest(
+export const APPOINTMENT: EnquiryKind = {
+  label: 'Appointment request',
+  tag: 'appointment-request',
+  phone: true,
+};
+export const CONTACT: EnquiryKind = { label: 'Contact enquiry', tag: 'contact-enquiry', phone: false };
+
+// Files an enquiry against the customer's Shopify record: the message (with
+// phone and time) goes into the customer note and the record is tagged so
+// enquiries can be filtered in the admin. No marketing consent is set.
+export async function recordEnquiry(
   config: Config,
-  enquiry: AppointmentRequest,
+  kind: EnquiryKind,
+  enquiry: Enquiry,
   now: Date = new Date()
 ): Promise<void> {
   const stamp = now.toISOString().replace('T', ' ').slice(0, 16) + ' UTC';
   const entry = [
-    `Appointment request — ${stamp}`,
-    `Phone: ${enquiry.phone || '—'}`,
+    `${kind.label} — ${stamp}`,
+    // Omitted entirely by forms that never ask for a phone number.
+    ...(kind.phone ? [`Phone: ${enquiry.phone || '—'}`] : []),
     '',
     enquiry.message.trim(),
   ].join('\n');
@@ -225,7 +239,7 @@ export async function recordAppointmentRequest(
     assertNoErrors(updated.customerUpdate.userErrors, 'Customer note not updated');
     const tagged = await adminGraphql<{ tagsAdd: { userErrors: UserErrors } }>(config, TAGS_ADD, {
       id: existing.id,
-      tags: [APPOINTMENT_TAG],
+      tags: [kind.tag],
     });
     assertNoErrors(tagged.tagsAdd.userErrors, 'Customer not tagged');
     return;
@@ -235,7 +249,7 @@ export async function recordAppointmentRequest(
   const created = await adminGraphql<{ customerCreate: { customer: { id: string } | null; userErrors: UserErrors } }>(
     config,
     CUSTOMER_CREATE,
-    { input: { email: enquiry.email, firstName, lastName, note: entry, tags: [APPOINTMENT_TAG] } }
+    { input: { email: enquiry.email, firstName, lastName, note: entry, tags: [kind.tag] } }
   );
   assertNoErrors(created.customerCreate.userErrors, 'Customer not created');
 }

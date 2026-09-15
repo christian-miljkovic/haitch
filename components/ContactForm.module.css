@@ -1,0 +1,70 @@
+/* Width comes from the containing section, which also governs its heading. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: var(--tracking);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--fg);
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.textarea {
+  resize: none;
+  line-height: 1.7;
+}
+
+.input:focus,
+.textarea:focus {
+  border-bottom-width: 2px;
+}
+
+.submit {
+  width: 100%;
+  padding: 14px 0;
+  text-transform: uppercase;
+  background: var(--fg);
+  color: var(--bg);
+  transition: opacity 0.3s var(--ease);
+}
+
+.submit:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.done {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.doneNote {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.error {
+  color: #8b0000;
+  font-size: 11px;
+}
