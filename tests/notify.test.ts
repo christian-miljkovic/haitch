@@ -38,17 +38,19 @@ describe('studio alerts', () => {
     expect(sent().to).toEqual(['studio@haitch-usa.com', 'harry@haitch-usa.com']);
   });
 
-  test('sends from the send subdomain, so the root domain’s own mail flow is untouched', async () => {
+  test('sends from the domain the mail provider verified, never from the root domain', async () => {
+    vi.stubEnv('RESEND_EMAIL_DOMAIN', 'send.haitch-usa.com');
     await alertStudio(APPOINTMENT, enquiry);
-    // The apex carries Microsoft 365 MX records and a hard-fail SPF record;
-    // alerts must never claim to come from it.
-    expect(sent().from).toContain('send.haitch-usa.com');
+    // The apex carries Microsoft 365 MX records and a hard-fail SPF record, so
+    // an alert claiming to come from it would be refused outright.
+    expect(sent().from).toContain('@send.haitch-usa.com');
+    expect(sent().from).not.toMatch(/@haitch-usa\.com>/);
   });
 
-  test('sends from ALERT_FROM when one is configured', async () => {
-    vi.stubEnv('ALERT_FROM', 'HAITCH <studio@send.haitch-usa.com>');
+  test('follows the verified domain if the provisioned one ever changes', async () => {
+    vi.stubEnv('RESEND_EMAIL_DOMAIN', 'mail.haitch-usa.com');
     await alertStudio(APPOINTMENT, enquiry);
-    expect(sent().from).toBe('HAITCH <studio@send.haitch-usa.com>');
+    expect(sent().from).toContain('@mail.haitch-usa.com');
   });
 
   test('sends nothing at all when no API key is configured', async () => {

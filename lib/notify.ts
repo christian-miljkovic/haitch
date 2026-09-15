@@ -15,9 +15,14 @@ const ENDPOINT = 'https://api.resend.com/emails';
 // recorded into a 504 — the failure this whole design exists to avoid.
 const TIMEOUT_MS = 5_000;
 
-// Alerts are sent from a subdomain so the root domain's Microsoft 365 mail
-// flow and its `-all` SPF record stay untouched.
-const DEFAULT_FROM = 'HAITCH <alerts@send.haitch-usa.com>';
+// The domain verified in Resend, set by the Vercel Marketplace integration
+// that provisioned the account. It is a subdomain (`send.haitch-usa.com`) so
+// the root domain's Microsoft 365 mail flow and its `-all` SPF record stay
+// untouched. Sending as anything else is refused, so the sender is derived
+// from it rather than configured separately.
+function sender(): string {
+  return `HAITCH <alerts@${process.env.RESEND_EMAIL_DOMAIN || 'send.haitch-usa.com'}>`;
+}
 
 // The fallback is on the parsed result, not the raw string: a blank or
 // comma-only ALERT_TO passes `||` and would send to nobody at all.
@@ -46,7 +51,7 @@ export async function alertStudio(kind: EnquiryKind, enquiry: Enquiry): Promise<
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: process.env.ALERT_FROM || DEFAULT_FROM,
+        from: sender(),
         to: recipients(),
         reply_to: enquiry.email,
         // A submitted name may contain newlines; a subject header may not.
