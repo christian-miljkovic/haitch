@@ -32,6 +32,15 @@
   letter-spacing: var(--tracking);
 }
 
+/* Sits under the address columns rather than inside their grid, which sizes
+   its cells to hug short lines of text. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: min(420px, 100%);
+}
+
 .value {
   font-size: 13px;
 }

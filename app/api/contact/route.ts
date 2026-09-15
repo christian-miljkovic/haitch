@@ -1,18 +1,19 @@
 import { NextResponse } from 'next/server';
 import { EMAIL_RE } from '@/lib/format';
 import { alertStudio } from '@/lib/notify';
-import { APPOINTMENT, readConfig, recordEnquiry, type Enquiry } from '@/lib/shopify-admin';
+import { CONTACT, readConfig, recordEnquiry, type Enquiry } from '@/lib/shopify-admin';
 
 function parse(body: Record<string, unknown>): Enquiry | null {
-  const field = (key: keyof Enquiry) => (typeof body[key] === 'string' ? (body[key] as string).trim() : '');
-  const enquiry = { name: field('name'), email: field('email'), phone: field('phone'), message: field('message') };
+  const field = (key: 'name' | 'email' | 'message') =>
+    typeof body[key] === 'string' ? (body[key] as string).trim() : '';
+  const enquiry = { name: field('name'), email: field('email'), message: field('message') };
   if (!enquiry.name || !EMAIL_RE.test(enquiry.email) || !enquiry.message) return null;
   return enquiry;
 }
 
-// Files an appointment request on the customer's Shopify record, tagged for the
-// showroom to find, then emails the studio. The email is best-effort: the
-// request is already recorded, so a failed send must not fail the booking.
+// Files a contact enquiry on the customer's Shopify record so it survives an
+// email outage, then emails the studio. The email is best-effort; the enquiry
+// is already recorded by the time we try to send it.
 export async function POST(request: Request) {
   const config = readConfig();
   if (!config) {
@@ -25,13 +26,13 @@ export async function POST(request: Request) {
   }
 
   try {
-    await recordEnquiry(config, APPOINTMENT, enquiry);
+    await recordEnquiry(config, CONTACT, enquiry);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[appointment] request not recorded:', message);
+    console.error('[contact] enquiry not recorded:', message);
     return NextResponse.json({ error: message }, { status: 502 });
   }
 
-  await alertStudio(APPOINTMENT, enquiry);
+  await alertStudio(CONTACT, enquiry);
   return NextResponse.json({ ok: true });
 }

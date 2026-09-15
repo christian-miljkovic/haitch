@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { POST } from '@/app/api/appointment/route';
+import { ALERT_URL, alertCalls, expectOneAlertAbout, graphqlCalls, json, stubRoutes } from './helpers/api';
 
 const fetchMock = vi.fn();
 
@@ -9,15 +10,13 @@ beforeEach(() => {
   vi.stubEnv('SHOPIFY_STORE_DOMAIN', 'example.myshopify.com');
   vi.stubEnv('SHOPIFY_CLIENT_ID', 'client-id');
   vi.stubEnv('SHOPIFY_CLIENT_SECRET', 'client-secret');
+  vi.stubEnv('RESEND_API_KEY', 'test-resend-key');
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 const request = (body: unknown) =>
   new Request('http://localhost/api/appointment', {
@@ -33,32 +32,25 @@ const enquiry = {
   message: 'Suit fitting please',
 };
 
-// Route Shopify calls by URL and by the GraphQL operation named in the body.
-function stubShopify(handlers: Record<string, unknown>) {
-  fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
-    if (url.endsWith('/admin/oauth/access_token')) return json({ access_token: 'shpat_x', expires_in: 86399 });
-    const { query } = JSON.parse(init?.body as string);
-    const op = Object.keys(handlers).find((name) => query.includes(name));
-    return json({ data: op ? handlers[op] : {} });
-  });
-}
+const stubShopify = (
+  handlers: Record<string, unknown>,
+  alert?: Response | (() => Response | Promise<Response>)
+) =>
+  stubRoutes(fetchMock, handlers, alert);
 
-const graphqlCalls = () =>
-  fetchMock.mock.calls
-    .filter(([url]) => (url as string).includes('/graphql.json'))
-    .map(([, init]) => JSON.parse((init as RequestInit).body as string));
+const newCustomer = {
+  customers: { customers: { nodes: [] } },
+  customerCreate: { customerCreate: { customer: { id: 'gid://shopify/Customer/1' }, userErrors: [] } },
+};
 
 describe('POST /api/appointment', () => {
   test('records a first-time enquiry as a tagged Shopify customer with the message in the notes', async () => {
-    stubShopify({
-      customers: { customers: { nodes: [] } },
-      customerCreate: { customerCreate: { customer: { id: 'gid://shopify/Customer/1' }, userErrors: [] } },
-    });
+    stubShopify(newCustomer);
 
     const res = await POST(request(enquiry));
     expect(res.status).toBe(200);
 
-    const create = graphqlCalls().find((c) => c.query.includes('customerCreate'));
+    const create = graphqlCalls(fetchMock).find((c) => c.query.includes('customerCreate'));
     expect(create.variables.input).toMatchObject({
       email: 'harry@example.com',
       firstName: 'Harry',
@@ -81,7 +73,7 @@ describe('POST /api/appointment', () => {
 
     const res = await POST(request(enquiry));
     expect(res.status).toBe(200);
-    const calls = graphqlCalls();
+    const calls = graphqlCalls(fetchMock);
     expect(calls.some((c) => c.query.includes('customerCreate'))).toBe(false);
 
     const update = calls.find((c) => c.query.includes('customerUpdate'));
@@ -99,7 +91,7 @@ describe('POST /api/appointment', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  test('surfaces Shopify user errors', async () => {
+  test('surfaces Shopify user errors and sends no alert', async () => {
     stubShopify({
       customers: { customers: { nodes: [] } },
       customerCreate: { customerCreate: { customer: null, userErrors: [{ field: ['email'], message: 'Email is invalid' }] } },
@@ -107,6 +99,7 @@ describe('POST /api/appointment', () => {
     const res = await POST(request(enquiry));
     expect(res.status).toBe(502);
     expect((await res.json()).error).toMatch(/Email is invalid/);
+    expect(alertCalls(fetchMock)).toHaveLength(0);
   });
 
   test('reports missing store configuration', async () => {
@@ -114,5 +107,68 @@ describe('POST /api/appointment', () => {
     const res = await POST(request(enquiry));
     expect(res.status).toBe(503);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  test('emails the showroom the enquiry once it is filed on the Shopify record', async () => {
+    stubShopify(newCustomer);
+
+    const res = await POST(request(enquiry));
+    expect(res.status).toBe(200);
+
+    expectOneAlertAbout(fetchMock, {
+      replyTo: 'harry@example.com',
+      subjectMatches: /appointment request.*harry tillman/i,
+      bodyContains: ['Harry Tillman', 'harry@example.com', '2125551234', 'Suit fitting please'],
+    });
+
+    // The record is the source of truth, so it must be written before we
+    // promise anybody an appointment exists.
+    const urls = fetchMock.mock.calls.map(([url]) => url as string);
+    expect(urls.findIndex((url) => url.includes('/graphql.json'))).toBeLessThan(
+      urls.findIndex((url) => url.startsWith(ALERT_URL))
+    );
+  });
+
+  test('still confirms the booking when the alert email cannot be sent', async () => {
+    stubShopify(newCustomer, () => json({ message: 'Domain is not verified' }, 403));
+
+    const res = await POST(request(enquiry));
+
+    // The request is safely on the Shopify record, so the customer must not be
+    // told their booking failed just because the alert bounced.
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ ok: true });
+    expect(graphqlCalls(fetchMock).some((c) => c.query.includes('customerCreate'))).toBe(true);
+  });
+
+  test('still confirms the booking when the mailer is unreachable', async () => {
+    stubShopify(newCustomer, () => {
+      throw new Error('getaddrinfo ENOTFOUND api.resend.com');
+    });
+
+    // A rejected fetch is a different branch from a refused send, and it is
+    // the one that would otherwise 500 an enquiry that is already recorded.
+    const res = await POST(request(enquiry));
+    expect(res.status).toBe(200);
+  });
+
+  test('writes a dash for an appointment that arrives with no phone number', async () => {
+    stubShopify(newCustomer);
+
+    await POST(request({ ...enquiry, phone: '' }));
+
+    const create = graphqlCalls(fetchMock).find((c) => c.query.includes('customerCreate'));
+    expect(create.variables.input.note).toMatch(/^Phone: —$/m);
+  });
+
+  test('files the request without emailing when no email provider is configured', async () => {
+    vi.stubEnv('RESEND_API_KEY', '');
+    stubShopify(newCustomer);
+
+    const res = await POST(request(enquiry));
+
+    expect(res.status).toBe(200);
+    expect(alertCalls(fetchMock)).toHaveLength(0);
+    expect(graphqlCalls(fetchMock).some((c) => c.query.includes('customerCreate'))).toBe(true);
   });
 });

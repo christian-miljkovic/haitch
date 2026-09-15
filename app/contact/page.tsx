@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import ContactForm from '@/components/ContactForm';
+import { STUDIO_EMAIL } from '@/lib/studio';
 import styles from './page.module.css';
 
 export const metadata: Metadata = { title: 'Contact' };
@@ -12,8 +14,8 @@ export default function ContactPage() {
       <div className={styles.sections}>
         <section className={styles.section}>
           <h2 className={styles.label}>GENERAL &amp; ORDERS</h2>
-          <a className={styles.value} href="mailto:info@haitch-usa.com">
-            info@haitch-usa.com
+          <a className={styles.value} href={`mailto:${STUDIO_EMAIL}`}>
+            {STUDIO_EMAIL}
           </a>
           <p className={styles.note}>
             Questions about sizing, orders, shipping and returns. We respond within one business
@@ -51,6 +53,11 @@ export default function ContactPage() {
           </a>
         </section>
       </div>
+
+      <section className={styles.form}>
+        <h2 className={styles.label}>GET IN TOUCH</h2>
+        <ContactForm />
+      </section>
     </div>
   );
 }
