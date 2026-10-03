@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
+import VisitorLocationAnalytics from '@/components/VisitorLocationAnalytics';
 import { CartProvider } from '@/components/CartContext';
 import Nav from '@/components/Nav';
 import BagDrawer from '@/components/BagDrawer';
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <BagDrawer />
         </CartProvider>
         <Analytics />
+        <VisitorLocationAnalytics />
         <ShopifyAnalytics />
       </body>
     </html>
